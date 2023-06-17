@@ -1,3 +1,5 @@
+import type { SpringConfig } from "react-spring";
+
 export type SnapPointProps = {
   /**
    * The height of the sticky header, if there's one
@@ -163,7 +165,7 @@ export type Props = {
    */
   preventPullUp?: boolean,
 
-} & Omit<React.PropsWithoutRef<JSX.IntrinsicElements['div']>, 'children'>
+} & Omit<React.PropsWithoutRef<JSX.IntrinsicElements['div']>, 'children'> & { springConfig?: SpringConfig }
 
 export interface RefHandles {
   /**

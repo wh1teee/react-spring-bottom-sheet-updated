@@ -71,6 +71,7 @@ export const BottomSheet = React.forwardRef<
     expandOnContentDrag = false,
     disableExpandList = [],
     preventPullUp = false,
+    springConfig,
     ...props
   },
   forwardRef
@@ -184,7 +185,7 @@ export const BottomSheet = React.forwardRef<
           },
         })
       ),
-    [set]
+    [set, springConfig]
   )
   const [current, send] = useMachine(overlayMachine, {
     devTools: debugging,
