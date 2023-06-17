@@ -189,6 +189,11 @@ Provide either a number, or a callback returning a number for the default positi
   }
 />
 ```
+### springConfig
+
+Type: react-spring/SpringConfig
+
+Customize the spring behavior of the sheet.
 
 ### header
 
