@@ -4,9 +4,9 @@
   "license": "MIT",
   "author": "Cody Olsen",
   "homepage": "https://react-spring-bottom-sheet.cocody.dev",
-  "repository": "wh1teee/react-spring-bottom-sheet-updated",
+  "repository": "la55u/react-spring-bottom-sheet-updated",
   "bugs": {
-    "url": "https://github.com/wh1teee/react-spring-bottom-sheet-updated/issues"
+    "url": "https://github.com/la55u/react-spring-bottom-sheet-updated/issues"
   },
   "version": "3.5.6",
   "main": "dist/index.js",
