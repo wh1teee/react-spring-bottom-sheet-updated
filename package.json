@@ -137,5 +137,8 @@
     "singleQuote": true
   },
   "source": "src/index.tsx",
-  "style": "dist/style.css"
+  "style": "dist/style.css",
+  "publishConfig": {
+    "access": "public"
+  }
 }
