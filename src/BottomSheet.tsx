@@ -177,6 +177,7 @@ export const BottomSheet = React.forwardRef<
               friction,
               friction + (friction - friction * velocity)
             ),
+            ...springConfig,
           },
           onRest: (...args) => {
             // @ts-expect-error
@@ -455,41 +456,48 @@ export const BottomSheet = React.forwardRef<
   useEffect(() => {
     const elem = scrollRef.current
 
-    const preventScrolling = e => {
-      const disableExpandListNodes = disableExpandList.map(selector => containerRef.current.querySelector(selector)).filter(Boolean);
-      if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode.contains(e.target))) {
+    const preventScrolling = (e) => {
+      const disableExpandListNodes = disableExpandList
+        .map((selector) => containerRef.current.querySelector(selector))
+        .filter(Boolean)
+      if (
+        disableExpandListNodes.length &&
+        disableExpandListNodes.some((disableNode) =>
+          disableNode.contains(e.target)
+        )
+      ) {
         return true
       } else if (preventScrollingRef.current && elem.scrollTop <= 0) {
         e.preventDefault()
       }
     }
 
-    let prevValue = 0;
-    const preventSafariOverscrollOnStart = e => {
+    let prevValue = 0
+    const preventSafariOverscrollOnStart = (e) => {
       if (elem.scrollTop < 0) {
-        prevValue = elem.scrollTop;
+        prevValue = elem.scrollTop
       }
     }
-  
+
     const preventSafariOverscrollOnMove = (e) => {
       if (elem.scrollTop < 0 && elem.scrollTop < prevValue) {
-        e.preventDefault();
+        e.preventDefault()
       }
-    };
+    }
 
     if (expandOnContentDrag) {
       elem.addEventListener('scroll', preventScrolling)
       elem.addEventListener('touchmove', preventScrolling)
-      elem.addEventListener('touchmove', preventSafariOverscrollOnMove);
+      elem.addEventListener('touchmove', preventSafariOverscrollOnMove)
       elem.addEventListener('touchstart', preventSafariOverscrollOnStart, {
-        passive: true
-      });
+        passive: true,
+      })
     }
     return () => {
       elem.removeEventListener('scroll', preventScrolling)
       elem.removeEventListener('touchmove', preventScrolling)
-      elem.removeEventListener('touchmove', preventSafariOverscrollOnMove);
-      elem.removeEventListener('touchstart', preventSafariOverscrollOnStart);
+      elem.removeEventListener('touchmove', preventSafariOverscrollOnMove)
+      elem.removeEventListener('touchstart', preventSafariOverscrollOnStart)
     }
   }, [expandOnContentDrag, scrollRef, disableExpandList])
 
@@ -507,15 +515,23 @@ export const BottomSheet = React.forwardRef<
     event,
   }) => {
     const my = _my * -1
-    const hasScroll = scrollRef.current.scrollHeight > scrollRef.current.clientHeight;
+    const hasScroll =
+      scrollRef.current.scrollHeight > scrollRef.current.clientHeight
     if (containerRef.current && disableExpandList.length) {
-      const disableExpandListNodes = disableExpandList.map(selector => containerRef.current.querySelector(selector)).filter(Boolean);
-      if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode.contains(event.target))) {
+      const disableExpandListNodes = disableExpandList
+        .map((selector) => containerRef.current.querySelector(selector))
+        .filter(Boolean)
+      if (
+        disableExpandListNodes.length &&
+        disableExpandListNodes.some((disableNode) =>
+          disableNode.contains(event.target)
+        )
+      ) {
         cancel()
         return memo
       }
     }
-    
+
     // Cancel the drag operation if the canDrag state changed
     if (!canDragRef.current) {
       console.log('handleDrag cancelled dragging because canDragRef is false')
@@ -546,8 +562,8 @@ export const BottomSheet = React.forwardRef<
       !down &&
       onDismiss &&
       direction > 0 &&
-      rawY + predictedDistance < minSnapRef.current / 2
-      && (!hasScroll || scrollRef.current.scrollTop <= 0)
+      rawY + predictedDistance < minSnapRef.current / 2 &&
+      (!hasScroll || scrollRef.current.scrollTop <= 0)
     ) {
       cancel()
       onDismiss()
@@ -577,16 +593,19 @@ export const BottomSheet = React.forwardRef<
             0.55
           )
       : predictedY
-    
+
     if (preventPullUp) {
       if (direction === 0) {
         return memo
       }
-      if ((direction < 0 && newY > maxSnap && _my <= 0) || (direction > 0 && newY > maxSnap && _my <= 0)) {
+      if (
+        (direction < 0 && newY > maxSnap && _my <= 0) ||
+        (direction > 0 && newY > maxSnap && _my <= 0)
+      ) {
         // realize feature: all pop-ups shouldn't be pulled up by certain if it is fully open
         // if direction up, and newY coordinate >= maxSnap, and distance Y from start point to current point (_my) <= 0 don't change height modal
         // or if direction down, and newY coordinate >= maxSnap, and distance Y from start point to current point (_my) <= 0 don't change height modal
-        return memo;
+        return memo
       }
     }
 
@@ -599,7 +618,7 @@ export const BottomSheet = React.forwardRef<
         newY = maxSnapRef.current
       }
 
-      preventScrollingRef.current = newY < maxSnapRef.current;
+      preventScrollingRef.current = newY < maxSnapRef.current
     } else {
       preventScrollingRef.current = false
     }
@@ -702,7 +721,12 @@ export const BottomSheet = React.forwardRef<
             {header}
           </div>
         )}
-        <div key="scroll" data-rsbs-scroll ref={scrollRef} {...(expandOnContentDrag ? bind({ isContentDragging: true }) : {})}>
+        <div
+          key="scroll"
+          data-rsbs-scroll
+          ref={scrollRef}
+          {...(expandOnContentDrag ? bind({ isContentDragging: true }) : {})}
+        >
           <div data-rsbs-content ref={contentRef}>
             {children}
           </div>
