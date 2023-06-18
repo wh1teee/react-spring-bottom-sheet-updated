@@ -1,4 +1,4 @@
-import type { SpringConfig } from "react-spring";
+import { SpringConfig } from 'react-spring'
 
 export type SnapPointProps = {
   /**
@@ -145,27 +145,28 @@ export type Props = {
   /**
    * Open immediatly instead of initially animating from a closed => open state, useful if the bottom sheet is visible by default and the animation would be distracting
    */
-  skipInitialTransition?: boolean,
+  skipInitialTransition?: boolean
 
   /**
    * Expand the bottom sheet on the content dragging. By default user can expand the bottom sheet only by dragging the header or overlay. This option enables expanding on dragging the content.
    * @default expandOnContentDrag === false
    */
-  expandOnContentDrag?: boolean,
+  expandOnContentDrag?: boolean
 
   /**
    * Prevent expanding the bottom sheet on the content dragging if event.target.classNames contains in disableExpandList array.
    * @default disableExpandList === []
    */
-  disableExpandList?: string[],
+  disableExpandList?: string[]
 
   /**
    * Prevent pull up if modal is fully open.
    * @default preventPullUp === false
    */
-  preventPullUp?: boolean,
-
-} & Omit<React.PropsWithoutRef<JSX.IntrinsicElements['div']>, 'children'> & { springConfig?: SpringConfig }
+  preventPullUp?: boolean
+} & Omit<React.PropsWithoutRef<JSX.IntrinsicElements['div']>, 'children'> & {
+    springConfig?: SpringConfig
+  }
 
 export interface RefHandles {
   /**
