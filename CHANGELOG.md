@@ -1,3 +1,11 @@
+## [1.0.2](https://github.com/la55u/react-spring-bottom-sheet-updated/compare/v1.0.1...v1.0.2) (2023-06-18)
+
+
+### Bug Fixes
+
+* public ([bb958de](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/bb958de7aa95851f368d82f3cb7179c5caa2bbcd))
+* update deprecated tailwind config ([581542f](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/581542ff1a4f6b20dddc607cbd750f058cdc01a3))
+
 ## [1.0.1](https://github.com/la55u/react-spring-bottom-sheet-updated/compare/v1.0.0...v1.0.1) (2023-06-18)
 
 
