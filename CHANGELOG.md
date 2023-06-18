@@ -1,3 +1,77 @@
+# 1.0.0 (2023-06-18)
+
+
+### Bug Fixes
+
+* add 18 to react peer dep ([d89c0bb](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/d89c0bbbd28e89bfc9aaf5136c83b6f254d2430b))
+* add CSS sourcemap ([04bf99f](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/04bf99f119f88cc49686b439cc3f31ec89b1041a))
+* add keywords ([05f4399](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/05f43990d6527b50c2a38d94cdebcacf02826e1e))
+* add more NaN type guards ([7664d1a](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/7664d1aad582f690554641ee841aae286865b60b))
+* API cleanup ([dc2b126](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/dc2b12641b5b1dd91599dd1d0724708d1e31f805))
+* avoid dividing by zero during prerender ([ca2b9ae](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/ca2b9ae2b97d1b871976d34f6b128e9b0386932d))
+* better type declarations ([c19dd44](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/c19dd446827dcb32cee664f84fea250beb86c1ff))
+* better velocity physics ([65390c7](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/65390c7043aa15c415cb5b19bc2ea1799c6cf4fc))
+* can be clicked through the overlay on IOS ([b9a2d95](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/b9a2d959c12168f5b8b073391504bbbee2168543))
+* **deps:** bump focus-trap ([a099a54](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/a099a54958828ae1e27b6de3608b41000ace23a6))
+* **deps:** update dependency @reach/portal to ^0.13.0 ([#94](https://github.com/la55u/react-spring-bottom-sheet-updated/issues/94)) ([1cc8056](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/1cc8056624d201414c81c8ee7c01b827064eecee))
+* **deps:** update dependency focus-trap to v6.2.2 ([9f79d35](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/9f79d354e4bee3ffb8bb58c220cd59744472b778))
+* doh, semantic release pushed v1.0 instead of v0.2 :( ([a5837bd](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/a5837bd5ae099a5471fd68ca7c52b42fcc186a5e))
+* dragging can overshoot if onDismiss is undefined ([#43](https://github.com/la55u/react-spring-bottom-sheet-updated/issues/43)) ([549ab30](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/549ab30be66dd138fb59a9bf869eb77002349b6f))
+* export prop types ts definitions ([36cf999](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/36cf999bfd8d1a0564ba9770a401e09a8650c607))
+* fade out correctly on snap ([17234bc](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/17234bc2aebd18122c4dd324ff5ad17096486983))
+* filter out taps on drag ([bc709a0](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/bc709a0becd45b37e8661ba530702e86626618b6))
+* guard against NaN in minSnap and maxSnap handlers ([7dbf037](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/7dbf0370afe33b2c93aa91f49f794fb3a30b5a48))
+* improve rubber band effect when out of bounds ([#29](https://github.com/la55u/react-spring-bottom-sheet-updated/issues/29)) ([4f2fe09](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/4f2fe090774bcfbfd5171281701cc5ba68db8a44))
+* improve TS definitions ([a8102bf](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/a8102bfd35e13238e8f09f8edc2fa8ddfa90fe1a))
+* iOS display cutouts caused a scrollbar in some cases ([45c182c](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/45c182c1c360ad060a76c50fc3d167876de15317))
+* make open transitions more interruptible on iOS ([#23](https://github.com/la55u/react-spring-bottom-sheet-updated/issues/23)) ([f898dd0](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/f898dd035fc0087237ec993789c40675c0dcd080))
+* microbundle defaults to preact, changed it back to react ([4f52355](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/4f523558f1190b659a175f82ae5a0267a25d13eb))
+* more stable defaultSnap RESIZE sync ([230dbe2](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/230dbe2bf0d3fe0f0314e444e0b2154fe5d2295f))
+* only animate on RESIZE if the source = element ([ceb3671](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/ceb3671887409184924db814226a6355dd795dbe))
+* readjust defaultSnap on resize ([b812786](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/b812786697d2a7c58ce87bf5106cbb524a59193d))
+* remove padding wrappers ([#57](https://github.com/la55u/react-spring-bottom-sheet-updated/issues/57)) ([60657fb](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/60657fbe752abbf07ee77264ad9e2aaff7a32db4))
+* RESIZE should never animate the content opacity ([2470ccc](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/2470cccb554ca9cf2efe343bdb8b8e4b836a3ae2))
+* rewrite interpolations to always be in frame sync ([cc43467](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/cc43467062e212f121045bf377b752c64c337213))
+* TS in microbundle breaks on [...(new Set)], swapping to Array.from ([2402b5a](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/2402b5adc6afa4759b6b3dd408b254b9d1693eeb))
+* update readme ([ceb55d3](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/ceb55d34bea9892e7fc25e063b69dd4e2d155d77))
+* updated readme with more API docs and examples ([6a48fab](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/6a48fab13285d113921d2c45e7a96e00e12138f3))
+* use layout effect to prevent tearing on Safari ([6b62559](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/6b62559218d83ac00bd035ae8dc4411aed6b7fb0))
+* use rAF instead of timeout to schedule unmount ([7f3c018](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/7f3c0181a001a78aaad0d5318dfe9f8af15c3d05))
+* v2 api ready, just need to clean up and write docs ([96f158e](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/96f158e6167e997a02e6a57f0b9395c47f0265fa))
+* xstate deprecation warning on null events ([e44e273](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/e44e273ec2f560228084e2f688e247933f0fa232))
+
+
+### Features
+
+* add height getter to ref ([51c8510](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/51c8510d2f6b69476877fb549afba49aa5bda5de))
+* Add RESIZE events ([b3ff691](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/b3ff691f6d893e56235e207864e63b61c8740750))
+* add sibling prop support ([767215b](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/767215b60ea08dfabe90c4a7d5d5f2a85684064e))
+* add skipInitialTransition to make skipping opt-in ([f200ad0](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/f200ad04440c34ce1391ebf7cafcf9ecee88e4ae))
+* add source to RESIZE events ([383e206](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/383e2062594de202ae77c25ac2ed9ae1137bcb2b)), closes [#53](https://github.com/la55u/react-spring-bottom-sheet-updated/issues/53)
+* add springConfig prop ([1a96832](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/1a96832f479a9d2b48aa19a43689f4566ffa9dbd))
+* allow the developer to disable focus trap ([#138](https://github.com/la55u/react-spring-bottom-sheet-updated/issues/138)) ([ef176b3](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/ef176b365426ed6fa5f14277f76df4dbb04b55db))
+* expand on content drag ([#141](https://github.com/la55u/react-spring-bottom-sheet-updated/issues/141)) ([ec733a5](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/ec733a5a64ce5324946305bc9616749fea81ddbd))
+* initial version ([ef3ecfa](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/ef3ecfacab7246c2d8904db189740991f2947727))
+* override source and velocity in snapTo ([1afe79f](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/1afe79f317086d0ab24869a3e312cb766a992c86))
+* refactor to xstate ([#46](https://github.com/la55u/react-spring-bottom-sheet-updated/issues/46)) ([6b2f92a](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/6b2f92ae5556026c3cf2496d7bbb3828996e0673))
+* SNAP events now have `source` ([240c212](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/240c21232c155e1c58e5b0526ab6f121706a5161)), closes [#87](https://github.com/la55u/react-spring-bottom-sheet-updated/issues/87)
+* V2 ([#17](https://github.com/la55u/react-spring-bottom-sheet-updated/issues/17)) ([8331800](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/8331800f0b1e95fa495a408bdddf02c3fc8c9d83))
+
+
+### BREAKING CHANGES
+
+* The resize observer logic is rewritten to no longer require wrapper elements like `[data-rsbs-footer-padding]`. If you're not using custom CSS and are simply importing `react-spring-bottom-sheet/dist/style.css` in your app then this isn't a breaking change for you.
+
+
+If you're using custom CSS, here's the breaking changes:
+- `[data-rsbs-header-padding]` removed, update selectors to `[data-rsbs-header]`
+- `[data-rsbs-content-padding]` removed, update selectors to `[data-rsbs-scroll]`
+- `[data-rsbs-footer-padding]` removed, update selectors to `[data-rsbs-footer]`
+- `[data-rsbs-antigap]` removed, update selectors to `[data-rsbs-root]:after` and make sure to add `content: '';`.
+- `[data-rsbs-content]` is changed, update selectors to `[data-rsbs-scroll]`.
+- The `<div style="overflow:hidden;">` wrapper that used to be between `[data-rsbs-content]` and `[data-rsbs-content-padding]` is now within `[data-rsbs-scroll]`, and no longer hardcode `overflow: hidden`, add `[data-rsbs-content] { overflow: hidden; }` to your CSS.
+* this is the real initial release, `v1` is fake software.
+
 ## [3.4.1](https://github.com/stipsan/react-spring-bottom-sheet/compare/v3.4.0...v3.4.1) (2022-06-01)
 
 
