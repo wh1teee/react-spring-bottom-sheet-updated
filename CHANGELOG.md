@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/la55u/react-spring-bottom-sheet-updated/compare/v1.0.0...v1.0.1) (2023-06-18)
+
+
+### Bug Fixes
+
+* update package name ([447f265](https://github.com/la55u/react-spring-bottom-sheet-updated/commit/447f265d83415267096072497e4d18c6acf32f05))
+
 # 1.0.0 (2023-06-18)
 
 
