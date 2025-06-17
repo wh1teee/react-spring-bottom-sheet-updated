@@ -8,7 +8,8 @@ import { debugging } from '../src/utils'
 import '../docs/style.css'
 import '../src/style.css'
 
-// Setup xstate debugging, but only when in dev mode
+// Setup XState debugging, but only when in dev mode
+// Note: @xstate/inspect v0.8.0 has warnings with XState v5, but functionality works
 if (debugging) {
   inspect({
     url: 'https://statecharts.io/inspect',

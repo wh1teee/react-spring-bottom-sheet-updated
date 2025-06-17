@@ -139,3 +139,5 @@ yarn-error.log*
 .vercel
 .idea
 .cursor
+
+memory-bank/
