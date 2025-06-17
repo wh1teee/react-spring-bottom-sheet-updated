@@ -1,6 +1,7 @@
 import cx from 'classnames'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useIntersectionObserver } from '../src/hooks'
 import styles from './StickyNugget.module.css'
 
 export default function StickyNugget({
@@ -10,6 +11,7 @@ export default function StickyNugget({
   example,
   text = 'text-gray-800',
   bg = 'bg-gray-100',
+  loadWhenVisible = true,
 }: {
   flip?: boolean
   heading: string
@@ -17,19 +19,30 @@ export default function StickyNugget({
   example: string
   bg?: string
   text?: string
+  loadWhenVisible?: boolean
 }) {
   const [loading, setLoading] = useState(false)
   const [loaded, setLoaded] = useState(false)
+  const [loadWhenInViewport, setLoadWhenInViewport] = useState(loadWhenVisible)
   const active = loading || loaded
 
   useEffect(() => {
     if (loaded && loading) {
-      const timeout = setTimeout(() => setLoading(false), 900)
-      return () => {
-        clearTimeout(timeout)
-      }
+      setLoading(false)
+      // const timeout = setTimeout(() => setLoading(false), 400)
+      // return () => {
+      //   clearTimeout(timeout)
+      // }
     }
   }, [loaded, loading])
+
+  const containerRef = useRef(null)
+
+  useIntersectionObserver(({ isIntersecting }) => {
+    if (isIntersecting && loadWhenInViewport && !loading && !loaded) {
+      setLoading(true)
+    }
+  }, [containerRef])
 
   return (
     <article
@@ -37,6 +50,7 @@ export default function StickyNugget({
         'md:pt-40': !flip,
         'md:pb-40': flip,
       })}
+      ref={containerRef}
     >
       <div
         className={cx('absolute top-0 right-0 bottom-0', styles.fancybg, bg)}
@@ -59,6 +73,7 @@ export default function StickyNugget({
               onClick={() => {
                 setLoading(false)
                 setLoaded(false)
+                setLoadWhenInViewport(false)
               }}
             >
               Close example
@@ -79,7 +94,10 @@ export default function StickyNugget({
                 'opacity-0': !loaded,
               })}
               src={example}
-              onLoad={() => loading && setLoaded(true)}
+              onLoad={() => {
+                console.log('loaded')
+                loading && setLoaded(true)
+              }}
             />
           )}
           {(!loaded || loading) && (

@@ -1,9 +1,16 @@
+/** @type {import('postcss-load-config').Config} */
 const path = require('path')
 const importFrom = path.resolve(__dirname, './defaults.json')
 
 module.exports = {
   plugins: {
+    'postcss-import': {},
+    'tailwindcss/nesting': {},
     tailwindcss: {},
+    autoprefixer: {},
+    'postcss-reporter': {
+      clearReportedMessages: true,
+    },
     'postcss-custom-properties-fallback': { importFrom },
     // @TODO add importFrom to preset-env when CSS snapshot testing is in place
     'postcss-preset-env': { importFrom, stage: 0 },
@@ -20,6 +27,5 @@ module.exports = {
         ],
       },
     },
-    autoprefixer: {},
   },
 }
