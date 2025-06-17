@@ -1,0 +1,11 @@
+{
+    "mcpServers": {
+        "sentry": {
+            "command": "npx",
+            "args": [
+                "mcp-remote",
+                "https://mcp.sentry.dev/sse"
+            ]
+        }
+    }
+}

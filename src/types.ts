@@ -42,6 +42,16 @@ export type SpringEvent =
   | { type: 'RESIZE'; source: ResizeSource }
   | { type: 'SNAP'; source: 'dragging' | 'custom' | string }
 
+/**
+ * Properties that can be used to customize the animation.
+ * see https://react-spring.dev/docs/advanced/config#config-visualizer
+ */
+export type SpringConfig = {
+  mass?: number
+  tension?: number
+  friction?: number
+}
+
 export type Props = {
   /**
    * Ensure that whatever you put in here have at least 1px height, or else the bottom sheet won't open
@@ -55,6 +65,10 @@ export type Props = {
    */
   sibling?: React.ReactNode
 
+  /**
+   * Pass the spring configurations (to change animation) in this format: { mass, tension, friction }.
+   */
+  springConfig?: SpringConfig
   /**
    * Start a transition from closed to open, open to closed, or snap to snap.
    * Return a promise or async to delay the start of the transition, just remember it can be cancelled.

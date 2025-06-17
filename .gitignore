@@ -137,3 +137,5 @@ yarn-error.log*
 
 # vercel
 .vercel
+.cursor
+.idea

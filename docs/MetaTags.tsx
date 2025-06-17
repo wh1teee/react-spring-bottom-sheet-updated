@@ -26,12 +26,12 @@ export default function MetaTags({
   const ogSiteName = props['og:site_name'] ?? name
   const twitterSite = props['twitter:site']
   const twitterDescription = props['twitter:description'] ?? description
+  const pageTitle = [title, ogSiteName].filter(Boolean).join(' | ');
 
   return (
     <Head>
       <title key="title">
-        {title ? `${title} | ` : null}
-        {props['og:site_name'] ?? name}
+        {pageTitle}
       </title>
       {description && (
         <meta key="description" name="description" content={description} />
