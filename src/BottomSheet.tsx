@@ -13,7 +13,7 @@ import React, {
   useRef,
 } from 'react'
 import { animated, config } from 'react-spring'
-import { rubberbandIfOutOfBounds, useDrag } from 'react-use-gesture'
+import { rubberbandIfOutOfBounds, useDrag } from '@use-gesture/react'
 import {
   useAriaHider,
   useFocusTrap,
@@ -162,7 +162,7 @@ export const BottomSheet = React.forwardRef<
     ({ onRest, config: { velocity = 1, ...config } = {}, ...opts }) =>
       // @ts-expect-error
       new Promise((resolve) =>
-        set({
+        set.start({
           ...opts,
           config: {
             velocity,
@@ -505,7 +505,11 @@ export const BottomSheet = React.forwardRef<
     velocity,
     event,
   }) => {
-    const my = _my * -1
+    // Ensure all values are finite numbers to prevent NaN calculations
+    const my = Number.isFinite(_my) ? _my * -1 : 0
+    const safeVelocity = Number.isFinite(velocity) ? velocity : 0
+    const safeMemo = Number.isFinite(memo) ? memo : 0
+    
     const hasScroll = scrollRef.current.scrollHeight > scrollRef.current.clientHeight;
     if (containerRef.current && disableExpandList.length) {
       const disableExpandListNodes = disableExpandList.map(selector => containerRef.current.querySelector(selector)).filter(Boolean);
@@ -534,8 +538,8 @@ export const BottomSheet = React.forwardRef<
       return memo
     }
 
-    const rawY = memo + my
-    const predictedDistance = my * velocity
+    const rawY = safeMemo + my
+    const predictedDistance = my * safeVelocity
     const predictedY = Math.max(
       minSnapRef.current,
       Math.min(maxSnapRef.current, rawY + predictedDistance * 2)
@@ -608,10 +612,26 @@ export const BottomSheet = React.forwardRef<
     }
 
     if (last) {
+      // Find the closest snap point to the predicted position
+      let snapY
+      if (Number.isFinite(newY)) {
+        snapY = findSnapRef.current(newY)
+        console.log('🔍 SNAP DEBUG:', { 
+          newY, 
+          snapY, 
+          minSnap: minSnapRef.current, 
+          maxSnap: maxSnapRef.current,
+          velocity: safeVelocity > 0.05 ? safeVelocity : 1
+        })
+      } else {
+        snapY = minSnapRef.current
+        console.log('⚠️ SNAP DEBUG: newY is not finite, using minSnap:', snapY)
+      }
+      
       send('SNAP', {
         payload: {
-          y: newY,
-          velocity: velocity > 0.05 ? velocity : 1,
+          y: snapY,
+          velocity: safeVelocity > 0.05 ? safeVelocity : 1,
           source: 'dragging',
         },
       })
@@ -622,14 +642,16 @@ export const BottomSheet = React.forwardRef<
     // @TODO too many rerenders
     //send('DRAG', { y: newY, velocity })
     //*
-    set({
-      y: newY,
+    // Ensure newY is valid before setting spring values
+    const safeY = Number.isFinite(newY) ? newY : safeMemo
+    set.start({
+      y: safeY,
       ready: 1,
       maxHeight: maxHeightRef.current,
       maxSnap: maxSnapRef.current,
       minSnap: minSnapRef.current,
       immediate: true,
-      config: { velocity },
+      config: { velocity: safeVelocity },
     })
     // */
 
@@ -729,8 +751,12 @@ const publicStates = [
 
 // Default prop values that are callbacks, and it's nice to save some memory and reuse their instances since they're pure
 function _defaultSnap({ snapPoints, lastSnap }: defaultSnapProps) {
-  return lastSnap ?? Math.min(...snapPoints)
+  if (Number.isFinite(lastSnap)) {
+    return lastSnap
+  }
+  const validSnapPoints = snapPoints.filter(point => Number.isFinite(point))
+  return validSnapPoints.length > 0 ? Math.min(...validSnapPoints) : 0
 }
 function _snapPoints({ minHeight }: SnapPointProps) {
-  return minHeight
+  return Number.isFinite(minHeight) ? minHeight : 0
 }
