@@ -13,7 +13,7 @@ import React, {
   useImperativeHandle,
   useRef,
 } from 'react'
-import { animated, config } from 'react-spring'
+import { animated, config } from '@react-spring/web'
 import { rubberbandIfOutOfBounds, useDrag } from '@use-gesture/react'
 import {
   useAriaHider,

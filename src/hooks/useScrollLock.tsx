@@ -1,5 +1,169 @@
-import { disableBodyScroll, enableBodyScroll } from 'body-scroll-lock'
-import { useDebugValue, useEffect, useRef } from 'react'
+import { useDebugValue, useEffect, useRef, useCallback } from 'react'
+
+/**
+ * Cross-platform scroll lock hook with modern CSS and iOS compatibility
+ * 
+ * Features:
+ * - Prevents layout shift by compensating for scrollbar width
+ * - iOS Safari compatibility with position: fixed approach
+ * - Support for allowTouchMove areas via data attributes
+ * - Proper cleanup and restoration
+ */
+
+interface ScrollLockOptions {
+  allowTouchMove?: (el: Element) => boolean
+  reserveScrollBarGap?: boolean
+}
+
+// Detect iOS - more reliable detection
+const isIOS = (() => {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window)
+})()
+
+// Store original styles for restoration
+interface OriginalStyles {
+  overflow: string
+  paddingRight: string
+  position?: string
+  top?: string
+  width?: string
+  scrollBehavior?: string
+}
+
+class ModernScrollLock {
+  private static instance: ModernScrollLock
+  private isLocked = false
+  private scrollOffset = 0
+  private originalStyles: OriginalStyles = {
+    overflow: '',
+    paddingRight: '',
+    position: '',
+    top: '',
+    width: '',
+    scrollBehavior: '',
+  }
+  private touchMoveHandler: ((e: TouchEvent) => void) | null = null
+
+  static getInstance(): ModernScrollLock {
+    if (!ModernScrollLock.instance) {
+      ModernScrollLock.instance = new ModernScrollLock()
+    }
+    return ModernScrollLock.instance
+  }
+
+  private getScrollbarWidth(): number {
+    if (typeof window === 'undefined') return 0
+    return window.innerWidth - document.documentElement.clientWidth
+  }
+
+  private saveOriginalStyles(): void {
+    const { body } = document
+    this.originalStyles = {
+      overflow: body.style.overflow,
+      paddingRight: body.style.paddingRight,
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
+      scrollBehavior: document.documentElement.style.scrollBehavior,
+    }
+  }
+
+  private restoreOriginalStyles(): void {
+    const { body } = document
+    const { documentElement } = document
+    
+    body.style.overflow = this.originalStyles.overflow
+    body.style.paddingRight = this.originalStyles.paddingRight
+    
+    if (isIOS) {
+      body.style.position = this.originalStyles.position || ''
+      body.style.top = this.originalStyles.top || ''
+      body.style.width = this.originalStyles.width || ''
+      documentElement.style.scrollBehavior = this.originalStyles.scrollBehavior || ''
+    }
+  }
+
+  private createTouchMoveHandler(options: ScrollLockOptions): (e: TouchEvent) => void {
+    return (e: TouchEvent) => {
+      // Allow touch move for elements with data-body-scroll-lock-ignore attribute
+      const target = e.target as Element
+      if (target?.closest('[data-body-scroll-lock-ignore]')) {
+        return
+      }
+
+      // Custom allowTouchMove callback
+      if (options.allowTouchMove && options.allowTouchMove(target)) {
+        return
+      }
+
+      e.preventDefault()
+    }
+  }
+
+  lock(targetElement: Element | null, options: ScrollLockOptions = {}): void {
+    if (this.isLocked || typeof window === 'undefined') return
+
+    this.saveOriginalStyles()
+    this.isLocked = true
+
+    const { body } = document
+    const { documentElement } = document
+    const scrollbarWidth = this.getScrollbarWidth()
+
+    // Apply base scroll lock styles
+    body.style.overflow = 'hidden'
+    
+    // Compensate for scrollbar width if needed
+    if (options.reserveScrollBarGap && scrollbarWidth > 0) {
+      body.style.paddingRight = `${scrollbarWidth}px`
+    }
+
+    // iOS-specific handling
+    if (isIOS) {
+      this.scrollOffset = window.pageYOffset
+      documentElement.style.scrollBehavior = 'unset'
+      body.style.position = 'fixed'
+      body.style.top = `-${this.scrollOffset}px`
+      body.style.width = '100%'
+    }
+
+    // Add touch event handler for iOS
+    if (isIOS && targetElement) {
+      this.touchMoveHandler = this.createTouchMoveHandler(options)
+      document.addEventListener('touchmove', this.touchMoveHandler, { passive: false })
+    }
+  }
+
+  unlock(): void {
+    if (!this.isLocked || typeof window === 'undefined') return
+
+    this.isLocked = false
+
+    // Remove touch event listener
+    if (this.touchMoveHandler) {
+      document.removeEventListener('touchmove', this.touchMoveHandler)
+      this.touchMoveHandler = null
+    }
+
+    // Restore original styles
+    this.restoreOriginalStyles()
+
+    // iOS-specific scroll restoration
+    if (isIOS) {
+      // Restore scroll position without smooth scrolling
+      window.scrollTo(0, this.scrollOffset)
+      // Restore smooth scrolling after a frame
+      requestAnimationFrame(() => {
+        document.documentElement.style.scrollBehavior = this.originalStyles.scrollBehavior || ''
+      })
+    }
+  }
+
+  isScrollLocked(): boolean {
+    return this.isLocked
+  }
+}
 
 /**
  * Handle scroll locking to ensure a good dragging experience on Android and iOS.
@@ -28,7 +192,23 @@ export function useScrollLock({
     deactivate: () => {},
   })
 
+  const scrollLock = ModernScrollLock.getInstance()
+
   useDebugValue(enabled ? 'Enabled' : 'Disabled')
+
+  const activate = useCallback(() => {
+    if (scrollLock.isScrollLocked()) return
+    
+    scrollLock.lock(targetRef.current, {
+      allowTouchMove: (el) => !!el.closest('[data-body-scroll-lock-ignore]'),
+      reserveScrollBarGap,
+    })
+  }, [scrollLock, targetRef, reserveScrollBarGap])
+
+  const deactivate = useCallback(() => {
+    if (!scrollLock.isScrollLocked()) return
+    scrollLock.unlock()
+  }, [scrollLock])
 
   useEffect(() => {
     if (!enabled) {
@@ -37,25 +217,11 @@ export function useScrollLock({
       return
     }
 
-    const target = targetRef.current
-    let active = false
-
     ref.current = {
-      activate: () => {
-        if (active) return
-        active = true
-        disableBodyScroll(target, {
-          allowTouchMove: (el) => el.closest('[data-body-scroll-lock-ignore]'),
-          reserveScrollBarGap,
-        })
-      },
-      deactivate: () => {
-        if (!active) return
-        active = false
-        enableBodyScroll(target)
-      },
+      activate,
+      deactivate,
     }
-  }, [enabled, targetRef, reserveScrollBarGap])
+  }, [enabled, activate, deactivate])
 
   return ref
 }

@@ -37,13 +37,11 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@juggle/resize-observer": "^3.4.0",
     "@radix-ui/react-portal": "^1.1.9",
+    "@react-spring/web": "^9.7.5",
     "@use-gesture/react": "^10.3.1",
     "@xstate/react": "^5.0.5",
-    "body-scroll-lock": "^3.1.5",
     "focus-trap": "^7.6.5",
-    "react-spring": "^9.7.5",
     "svgo": "3.3.2",
     "xstate": "^5.19.4"
   },
@@ -80,7 +78,7 @@
     "postcss": "^8.5.6",
     "postcss-cli": "^11.0.1",
     "postcss-custom-properties-fallback": "^1.0.2",
-    "postcss-import-svg": "^1.0.5",
+    "postcss-inline-svg": "^6.0.0",
     "postcss-preset-env": "^10.2.3",
     "prettier": "^3.5.3",
     "prettier-package-json": "^2.8.0",
