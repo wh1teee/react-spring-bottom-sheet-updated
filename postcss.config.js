@@ -9,14 +9,21 @@ export default {
   plugins: {
     tailwindcss: {},
     'postcss-custom-properties-fallback': { importFrom },
-    // @TODO add importFrom to preset-env when CSS snapshot testing is in place
-    'postcss-preset-env': { importFrom, stage: 0 },
+    'postcss-preset-env': { 
+      importFrom, 
+      stage: 2, // Balance between modern features and broad compatibility
+      features: {
+        'custom-properties': false, // Let fallback plugin handle this
+      },
+    },
     'postcss-import-svg': {
       paths: [resolve(__dirname, 'docs')],
       svgo: {
         plugins: [
+          'preset-default',
           {
-            removeUnknownsAndDefaults: {
+            name: 'removeUnknownsAndDefaults',
+            params: {
               // On by default, disabled as it breaks the frame.svg
               unknownAttrs: false,
             },
@@ -24,6 +31,5 @@ export default {
         ],
       },
     },
-    autoprefixer: {},
   },
 }
