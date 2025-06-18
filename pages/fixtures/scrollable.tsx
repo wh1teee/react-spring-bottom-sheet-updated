@@ -11,7 +11,7 @@ import SheetContent from '../../docs/fixtures/SheetContent'
 import SnapMarker from '../../docs/fixtures/SnapMarker'
 import { scrollable } from '../../docs/headings'
 import MetaTags from '../../docs/MetaTags'
-import { BottomSheet, BottomSheetRef } from '../../src'
+import { BottomSheet, type BottomSheetRef } from '../../src'
 import type { GetStaticProps } from '../_app'
 
 export { getStaticProps } from '../_app'

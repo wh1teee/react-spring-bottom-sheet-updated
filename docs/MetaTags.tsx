@@ -30,8 +30,7 @@ export default function MetaTags({
   return (
     <Head>
       <title key="title">
-        {title ? `${title} | ` : null}
-        {props['og:site_name'] ?? name}
+        {title ? `${title} | ${props['og:site_name'] ?? name}` : props['og:site_name'] ?? name}
       </title>
       {description && (
         <meta key="description" name="description" content={description} />

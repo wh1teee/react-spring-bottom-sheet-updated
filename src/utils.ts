@@ -1,5 +1,3 @@
-/* eslint-disable no-self-compare */
-
 // stolen from lodash
 export function clamp(number: number, lower: number, upper: number) {
   number = +number

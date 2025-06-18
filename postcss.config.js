@@ -1,18 +1,29 @@
-const path = require('path')
-const importFrom = path.resolve(__dirname, './defaults.json')
+import { fileURLToPath } from 'node:url'
+import { dirname, resolve } from 'node:path'
 
-module.exports = {
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const importFrom = resolve(__dirname, './defaults.json')
+
+export default {
   plugins: {
     tailwindcss: {},
     'postcss-custom-properties-fallback': { importFrom },
-    // @TODO add importFrom to preset-env when CSS snapshot testing is in place
-    'postcss-preset-env': { importFrom, stage: 0 },
+    'postcss-preset-env': { 
+      importFrom, 
+      stage: 2, // Balance between modern features and broad compatibility
+      features: {
+        'custom-properties': false, // Let fallback plugin handle this
+      },
+    },
     'postcss-import-svg': {
-      paths: [path.resolve(__dirname, 'docs')],
+      paths: [resolve(__dirname, 'docs')],
       svgo: {
         plugins: [
+          'preset-default',
           {
-            removeUnknownsAndDefaults: {
+            name: 'removeUnknownsAndDefaults',
+            params: {
               // On by default, disabled as it breaks the frame.svg
               unknownAttrs: false,
             },
@@ -20,6 +31,5 @@ module.exports = {
         ],
       },
     },
-    autoprefixer: {},
   },
 }

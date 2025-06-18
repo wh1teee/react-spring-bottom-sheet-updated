@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/alt-text */
 import cx from 'classnames'
 import { useState } from 'react'
 import Image from 'next/image'
