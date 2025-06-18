@@ -72,9 +72,6 @@ importers:
       '@xstate/inspect':
         specifier: ^0.8.0
         version: 0.8.0(ws@8.18.2)(xstate@5.19.4)
-      babel-plugin-transform-remove-console:
-        specifier: ^6.9.4
-        version: 6.9.4
       classnames:
         specifier: ^2.5.1
         version: 2.5.1
@@ -153,9 +150,6 @@ importers:
       smooth-scroll-into-view-if-needed:
         specifier: ^2.0.2
         version: 2.0.2
-      swiper:
-        specifier: ^10.3.1
-        version: 10.3.1
       tailwindcss:
         specifier: ^3.4.17
         version: 3.4.17
@@ -2330,9 +2324,6 @@ packages:
 
   babel-plugin-transform-async-to-promises@0.8.18:
     resolution: {integrity: sha512-WpOrF76nUHijnNn10eBGOHZmXQC8JYRME9rOLxStOga7Av2VO53ehVFvVNImMksVtQuL2/7ZNxEgxnx7oo/3Hw==}
-
-  babel-plugin-transform-remove-console@6.9.4:
-    resolution: {integrity: sha512-88blrUrMX3SPiGkT1GnvVY8E/7A+k6oj3MNvUtTIxJflFzXTw1bHkuJ/y039ouhFMp2prRn5cQGzokViYi1dsg==}
 
   babel-plugin-transform-replace-expressions@0.2.0:
     resolution: {integrity: sha512-Eh1rRd9hWEYgkgoA3D0kGp7xJ/wgVshgsqmq60iC4HVWD+Lux+fNHSHBa2v1Hsv+dHflShC71qKhiH40OiPtDA==}
@@ -5924,10 +5915,6 @@ packages:
     engines: {node: '>=14.0.0'}
     hasBin: true
 
-  swiper@10.3.1:
-    resolution: {integrity: sha512-24Wk3YUdZHxjc9faID97GTu6xnLNia+adMt6qMTZG/HgdSUt4fS0REsGUXJOgpTED0Amh/j+gRGQxsLayJUlBQ==}
-    engines: {node: '>= 4.7.0'}
-
   synckit@0.11.8:
     resolution: {integrity: sha512-+XZ+r1XGIJGeQk3VvXhT6xx/VpbHsRzsTkGgF6E5RX9TTXD0118l87puaEBZ566FhqblC6U0d4XnubznJDm30A==}
     engines: {node: ^14.18.0 || >=16.0.0}
@@ -8789,8 +8776,6 @@ snapshots:
       hermes-parser: 0.28.1
 
   babel-plugin-transform-async-to-promises@0.8.18: {}
-
-  babel-plugin-transform-remove-console@6.9.4: {}
 
   babel-plugin-transform-replace-expressions@0.2.0(@babel/core@7.27.4):
     dependencies:
@@ -12884,8 +12869,6 @@ snapshots:
       css-what: 6.1.0
       csso: 5.0.5
       picocolors: 1.1.1
-
-  swiper@10.3.1: {}
 
   synckit@0.11.8:
     dependencies:
