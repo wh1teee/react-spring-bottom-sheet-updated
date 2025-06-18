@@ -47,7 +47,7 @@ export const BottomSheet = React.forwardRef<
     initialState: 'OPEN' | 'CLOSED'
     lastSnapRef: React.MutableRefObject<number | null>
   } & Props
->(function BottomSheetInternal(
+>((
   {
     children,
     sibling,
@@ -75,7 +75,7 @@ export const BottomSheet = React.forwardRef<
     ...props
   },
   forwardRef
-) {
+) => {
   // Before any animations can start we need to measure a few things, like the viewport and the dimensions of content, and header + footer if they exist
   // @TODO make ready its own state perhaps, before open or closed
   const { ready, registerReady } = useReady()
@@ -218,7 +218,7 @@ export const BottomSheet = React.forwardRef<
         []
       ),
       onSnapEnd: useCallback(
-        ({ context }, event) =>
+        ({ context }, _event) =>
           onSpringEndRef.current?.({
             type: 'SNAP',
             source: context.snapSource,
@@ -446,7 +446,7 @@ export const BottomSheet = React.forwardRef<
     }
 
     let prevValue = 0;
-    const preventSafariOverscrollOnStart = e => {
+    const preventSafariOverscrollOnStart = _e => {
       if (elem.scrollTop < 0) {
         prevValue = elem.scrollTop;
       }

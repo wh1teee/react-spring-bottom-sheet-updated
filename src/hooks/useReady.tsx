@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 export function useReady() {
   const [ready, setReady] = useState(false)
-  const [readyMap, updateReadyMap] = useState<{ [key: string]: boolean }>({})
+  const [readyMap, updateReadyMap] = useState<Record<string, boolean>>({})
 
   const registerReady = useCallback((key: string) => {
     console.count(`registerReady:${key}`)

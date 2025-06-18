@@ -7,7 +7,7 @@ import Container from '../../docs/fixtures/Container'
 import Expandable from '../../docs/fixtures/Expandable'
 import Kbd from '../../docs/fixtures/Kbd'
 import SheetContent from '../../docs/fixtures/SheetContent'
-import { BottomSheet, BottomSheetRef } from '../../src'
+import { BottomSheet, type BottomSheetRef } from '../../src'
 
 // Just to test we can stop re-renders with this pattern when necessary
 const MemoBottomSheet = memo(BottomSheet)
@@ -88,7 +88,7 @@ function Two() {
             Dismiss
           </Button>
         }
-        defaultSnap={({ headerHeight, footerHeight, minHeight }) =>
+        defaultSnap={({ headerHeight: _headerHeight, footerHeight: _footerHeight, minHeight }) =>
           //headerHeight + footerHeight
           minHeight
         }

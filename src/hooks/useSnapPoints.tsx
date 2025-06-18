@@ -1,4 +1,5 @@
-import React, {
+import type React from 'react';
+import {
   useCallback,
   useDebugValue,
   useEffect,
@@ -6,11 +7,11 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { ResizeObserver, ResizeObserverEntry } from '@juggle/resize-observer'
+import { ResizeObserver, type ResizeObserverEntry } from '@juggle/resize-observer'
 import type { defaultSnapProps, ResizeSource, snapPoints } from '../types'
 import { processSnapPoints, roundAndCheckForNaN } from '../utils'
-import { useReady } from './useReady'
-import { ResizeObserverOptions } from '@juggle/resize-observer/lib/ResizeObserverOptions'
+import type { useReady } from './useReady'
+import type { ResizeObserverOptions } from '@juggle/resize-observer/lib/ResizeObserverOptions'
 import { useLayoutEffect } from './useLayoutEffect'
 
 export function useSnapPoints({
@@ -199,7 +200,7 @@ function useElementSizeObserver(
     resizeSourceRef: React.MutableRefObject<ResizeSource>
   }
 ): number {
-  let [size, setSize] = useState(0)
+  const [size, setSize] = useState(0)
 
   useDebugValue(`${label}: ${size}`)
 
