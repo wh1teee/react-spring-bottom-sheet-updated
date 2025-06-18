@@ -109,9 +109,11 @@ The implementation uses a deep merge strategy where:
 3. Per-call config overrides are still supported in the `asyncSet` function
 
 ### Performance Optimization
-- Uses `useMemo` for both default config creation and merging
-- Proper dependency arrays ensure minimal recalculations
+- Default config is created once at module level (not on each render)
+- Uses `useMemo` only for merging user config with defaults
+- Minimal dependency array includes only `customSpringConfig`
 - No impact on existing functionality when `springConfig` is not provided
+- Optimized bundle size and runtime performance
 
 ### Type Safety
 - Comprehensive TypeScript support with all React Spring config options

@@ -7,12 +7,14 @@
 
 import { useMachine } from '@xstate/react'
 import { fromPromise } from 'xstate'
-import React, {
+import {
   useCallback,
   useEffect,
   useImperativeHandle,
   useRef,
   useMemo,
+  forwardRef,
+  RefObject,
 } from 'react'
 import { animated, config } from '@react-spring/web'
 import { rubberbandIfOutOfBounds, useDrag } from '@use-gesture/react'
@@ -37,17 +39,24 @@ import type {
   SpringConfig,
 } from './types'
 
-
-const { tension, friction } = config.default
+// Default spring configuration that can be overridden by user
+// Uses React Spring's official defaults as base, adds only critical parameters
+const defaultSpringConfig: SpringConfig = {
+  ...config.default,
+  mass: 1,
+  clamp: true,     // Critical: prevents animation from going out of bounds
+  precision: 0.01, // Important: controls animation smoothness and completion
+  velocity: 0,
+}
 
 // @TODO implement AbortController to deal with race conditions
 
 // @TODO rename to SpringBottomSheet and allow userland to import it directly, for those who want maximum control and minimal bundlesize
-export const BottomSheet = React.forwardRef<
+export const BottomSheet = forwardRef<
   RefHandles,
   {
     initialState: 'OPEN' | 'CLOSED'
-    lastSnapRef: React.MutableRefObject<number | null>
+    lastSnapRef: RefObject<number | null>
   } & Props
 >((
   {
@@ -79,21 +88,11 @@ export const BottomSheet = React.forwardRef<
   },
   forwardRef
 ) => {
-  // Default spring configuration that can be overridden by user
-  const defaultSpringConfig: SpringConfig = useMemo(() => ({
-    mass: 1,
-    tension,
-    friction,
-    clamp: true,
-    precision: 0.01,
-    velocity: 0,
-  }), [])
-
   // Merge custom config with default config
   const springConfig = useMemo(() => ({
     ...defaultSpringConfig,
     ...customSpringConfig,
-  }), [defaultSpringConfig, customSpringConfig])
+  }), [customSpringConfig])
 
   // Before any animations can start we need to measure a few things, like the viewport and the dimensions of content, and header + footer if they exist
   // @TODO make ready its own state perhaps, before open or closed
@@ -354,7 +353,6 @@ export const BottomSheet = React.forwardRef<
           maxSnap: maxSnapRef.current,
           minSnap: minSnapRef.current,
           immediate: prefersReducedMotion.current,
-          config: { velocity: input?.velocity || 1 },
         })
       }),
       resizeSmoothly: fromPromise(async () => {
