@@ -1,7 +1,11 @@
 const colors = require('tailwindcss/colors')
 
 module.exports = {
-  purge: ['./docs/**/*.{js,ts,jsx,tsx}', './pages/**/*.{js,ts,jsx,tsx}'],
+  content: [
+    './docs/**/*.{js,ts,jsx,tsx,mdx}', 
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/**/*.{js,ts,jsx,tsx,mdx}', // Added src directory
+  ],
   darkMode: 'media', // 'media' or 'class'
   theme: {
     // https://fonts.google.com/specimen/Source+Sans+Pro?query=Source&sidebar.open=true&selection.family=Montserrat:wght@700;900|Source+Sans+Pro
@@ -11,7 +15,7 @@ module.exports = {
     },
     extend: {
       colors: {
-        gray: colors.blueGray,
+        gray: colors.slate,
         hero: {
           DEFAULT: '#592340',
           lighter: '#FC9CC3',
@@ -25,17 +29,6 @@ module.exports = {
       },
     },
   },
-  variants: {
-    extend: {
-      backgroundColor: ['active', 'focus-visible'],
-      textColor: ['active', 'focus-visible'],
-      transitionDuration: ['focus', 'focus-visible'],
-      ringColor: ['group-focus', 'focus-visible'],
-      ringOffsetColor: ['group-focus', 'focus-visible'],
-      ringOffsetWidth: ['group-focus', 'focus-visible'],
-      ringOpacity: ['group-focus', 'focus-visible'],
-      ringWidth: ['group-focus', 'focus-visible'],
-    },
-  },
+  // Removed deprecated variants section - JIT mode handles this automatically in Tailwind 3.x
   plugins: [require('@tailwindcss/forms')],
 }

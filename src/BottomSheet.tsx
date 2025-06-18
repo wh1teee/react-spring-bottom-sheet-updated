@@ -105,38 +105,38 @@ export const BottomSheet = React.forwardRef<
 
   // Keeps track of the current height, or the height transitioning to
   const heightRef = useRef(0)
-  const resizeSourceRef = useRef<ResizeSource>()
+  const resizeSourceRef = useRef<ResizeSource>('window')
   const preventScrollingRef = useRef(false)
 
   const prefersReducedMotion = useReducedMotion()
 
   // "Plugins" huhuhu
   const scrollLockRef = useScrollLock({
-    targetRef: scrollRef,
+    targetRef: scrollRef as React.RefObject<Element>,
     enabled: ready && scrollLocking,
     reserveScrollBarGap,
   })
   const ariaHiderRef = useAriaHider({
-    targetRef: containerRef,
+    targetRef: containerRef as React.RefObject<Element>,
     enabled: ready && blocking,
   })
   const focusTrapRef = useFocusTrap({
-    targetRef: containerRef,
-    fallbackRef: overlayRef,
+    targetRef: containerRef as React.RefObject<HTMLElement>,
+    fallbackRef: overlayRef as React.RefObject<HTMLElement>,
     initialFocusRef: initialFocusRef || undefined,
     enabled: ready && blocking && initialFocusRef !== false,
   })
 
   const { minSnap, maxSnap, maxHeight, findSnap } = useSnapPoints({
-    contentRef,
+    contentRef: contentRef as React.RefObject<Element>,
     controlledMaxHeight,
     footerEnabled: !!footer,
-    footerRef,
+    footerRef: footerRef as React.RefObject<Element>,
     getSnapPoints,
     headerEnabled: header !== false,
-    headerRef,
+    headerRef: headerRef as React.RefObject<Element>,
     heightRef,
-    lastSnapRef,
+    lastSnapRef: lastSnapRef as React.RefObject<number>,
     ready,
     registerReady,
     resizeSourceRef,
@@ -431,12 +431,16 @@ export const BottomSheet = React.forwardRef<
 
   useEffect(() => {
     const elem = scrollRef.current
+    if (!elem) return
 
     const preventScrolling = e => {
-      const disableExpandListNodes = disableExpandList.map(selector => containerRef.current.querySelector(selector)).filter(Boolean);
-      if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode.contains(e.target))) {
-        return true
-      } else if (preventScrollingRef.current && elem.scrollTop <= 0) {
+      if (containerRef.current) {
+        const disableExpandListNodes = disableExpandList.map(selector => containerRef.current!.querySelector(selector)).filter(Boolean);
+        if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode && disableNode.contains(e.target))) {
+          return true
+        }
+      }
+      if (preventScrollingRef.current && elem.scrollTop <= 0) {
         e.preventDefault()
       }
     }
@@ -463,10 +467,12 @@ export const BottomSheet = React.forwardRef<
       });
     }
     return () => {
-      elem.removeEventListener('scroll', preventScrolling)
-      elem.removeEventListener('touchmove', preventScrolling)
-      elem.removeEventListener('touchmove', preventSafariOverscrollOnMove);
-      elem.removeEventListener('touchstart', preventSafariOverscrollOnStart);
+      if (elem) {
+        elem.removeEventListener('scroll', preventScrolling)
+        elem.removeEventListener('touchmove', preventScrolling)
+        elem.removeEventListener('touchmove', preventSafariOverscrollOnMove);
+        elem.removeEventListener('touchstart', preventSafariOverscrollOnStart);
+      }
     }
   }, [expandOnContentDrag, scrollRef, disableExpandList])
 
@@ -488,10 +494,15 @@ export const BottomSheet = React.forwardRef<
     const safeVelocity = Number.isFinite(velocity) ? velocity : 0
     const safeMemo = Number.isFinite(memo) ? memo : 0
     
+    if (!scrollRef.current) {
+      cancel()
+      return memo
+    }
+    
     const hasScroll = scrollRef.current.scrollHeight > scrollRef.current.clientHeight;
     if (containerRef.current && disableExpandList.length) {
-      const disableExpandListNodes = disableExpandList.map(selector => containerRef.current.querySelector(selector)).filter(Boolean);
-      if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode.contains(event.target))) {
+      const disableExpandListNodes = disableExpandList.map(selector => containerRef.current!.querySelector(selector)).filter(Boolean);
+      if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode && disableNode.contains(event.target))) {
         cancel()
         return memo
       }
@@ -648,25 +659,27 @@ export const BottomSheet = React.forwardRef<
 
   return (
     <animated.div
-      {...props}
-      data-rsbs-root
-      data-rsbs-state={publicStates.find(state => current.matches(state))}
-      data-rsbs-is-blocking={blocking}
-      data-rsbs-is-dismissable={!!onDismiss}
-      data-rsbs-has-header={!!header}
-      data-rsbs-has-footer={!!footer}
-      className={className}
-      ref={containerRef}
-      style={{
-        // spread in the interpolations yeees
-        ...interpolations,
-        // but allow overriding them/disabling them
-        ...style,
-        // Not overridable as the "focus lock with opacity 0" trick rely on it
-        // @TODO the line below only fails on TS <4
-        // @ts-ignore
-        opacity: spring.ready,
-      }}
+      {...({
+        ...props,
+        'data-rsbs-root': true,
+        'data-rsbs-state': publicStates.find(state => current.matches(state)),
+        'data-rsbs-is-blocking': blocking,
+        'data-rsbs-is-dismissable': !!onDismiss,
+        'data-rsbs-has-header': !!header,
+        'data-rsbs-has-footer': !!footer,
+        className: className,
+        ref: containerRef,
+        style: {
+          // spread in the interpolations yeees
+          ...interpolations,
+          // but allow overriding them/disabling them
+          ...style,
+          // Not overridable as the "focus lock with opacity 0" trick rely on it
+          // @TODO the line below only fails on TS <4
+          // @ts-ignore
+          opacity: spring.ready,
+        }
+      } as any)}
     >
       {sibling}
       {blocking && (
@@ -726,7 +739,7 @@ const publicStates = [
 
 // Default prop values that are callbacks, and it's nice to save some memory and reuse their instances since they're pure
 function _defaultSnap({ snapPoints, lastSnap }: defaultSnapProps) {
-  if (Number.isFinite(lastSnap)) {
+  if (Number.isFinite(lastSnap) && lastSnap !== null) {
     return lastSnap
   }
   const validSnapPoints = snapPoints.filter(point => Number.isFinite(point))

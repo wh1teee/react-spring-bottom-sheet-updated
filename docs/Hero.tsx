@@ -69,7 +69,7 @@ export default function Hero({ className }: { className?: string }) {
   const skip = !mounted && immediate ? true : false
   const [open, setOpen] = useState(true)
   const openClassRef = useRef(false)
-  const classNameRef = useRef(null)
+  const classNameRef = useRef<HTMLElement | null>(null)
   const { y, state } = useSpring<any>({
     config: config.stiff,
     immediate: skip,
@@ -80,15 +80,13 @@ export default function Hero({ className }: { className?: string }) {
     },
     onFrame: ({ state }) => {
       if (state > 0) {
-        if (!openClassRef.current) {
-          classNameRef.current.classList.add(
-            styles.open,
-            skip ? styles.skip : undefined
-          )
+        if (!openClassRef.current && classNameRef.current) {
+          const classesToAdd = [styles.open, skip ? styles.skip : undefined].filter(Boolean) as string[]
+          classNameRef.current.classList.add(...classesToAdd)
           openClassRef.current = true
         }
       } else {
-        if (openClassRef.current) {
+        if (openClassRef.current && classNameRef.current) {
           classNameRef.current.classList.remove(styles.open, styles.skip)
           openClassRef.current = false
         }
@@ -129,25 +127,29 @@ export default function Hero({ className }: { className?: string }) {
               style={{
                 fill: state.to({ output: ['#fed7e6', '#FC9EC2'] }),
               }}
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M49 13.5C49.5 18 52.6325 23 60.5 23H139C146.868 23 149.5 18 150 13.5C150.282 10.9661 151.291 9 155 9L169.527 9.08597C182.598 9.08597 191 16.9649 191 30V379.5C191 392.535 182.598 400.468 169.527 400.468H30.0545C16.9836 400.468 9 392.585 9 379.55V30C9 16.9649 16.929 9 30 9H45C48.7085 9 48.7791 11.5122 49 13.5Z"
-              fill="#fed7e6"
+              {...({
+                fillRule: "evenodd",
+                clipRule: "evenodd",
+                d: "M49 13.5C49.5 18 52.6325 23 60.5 23H139C146.868 23 149.5 18 150 13.5C150.282 10.9661 151.291 9 155 9L169.527 9.08597C182.598 9.08597 191 16.9649 191 30V379.5C191 392.535 182.598 400.468 169.527 400.468H30.0545C16.9836 400.468 9 392.585 9 379.55V30C9 16.9649 16.929 9 30 9H45C48.7085 9 48.7791 11.5122 49 13.5Z",
+                fill: "#fed7e6"
+              } as any)}
             />
             <animated.g
-              ref={classNameRef}
-              className="transform-gpu origin-center"
-              style={{
-                ['--tw-translate-y' as any]: y,
-                /*
-                ['--tw-scale-x' as any]: state.to({
-                  output: [0.9, 1],
-                }),
-                ['--tw-scale-y' as any]: state.to({
-                  output: [0.9, 1],
-                }),
-                // */
-              }}
+              {...({
+                ref: classNameRef,
+                className: "transform-gpu origin-center",
+                style: {
+                  ['--tw-translate-y' as any]: y,
+                  /*
+                  ['--tw-scale-x' as any]: state.to({
+                    output: [0.9, 1],
+                  }),
+                  ['--tw-scale-y' as any]: state.to({
+                    output: [0.9, 1],
+                  }),
+                  // */
+                }
+              } as any)}
             >
               <path
                 d="M9 99.75C9 93.4642 9 90.3213 9.92713 87.8082C11.4459 83.6913 14.6913 80.4459 18.8082 78.9271C21.3213 78 24.4642 78 30.75 78H169.25C175.536 78 178.679 78 181.192 78.9271C185.309 80.4459 188.554 83.6913 190.073 87.8082C191 90.3213 191 93.4642 191 99.75V372C191 380.381 191 384.572 189.764 387.922C187.739 393.412 183.412 397.739 177.922 399.764C174.572 401 170.381 401 162 401H38C29.619 401 25.4285 401 22.0777 399.764C16.5884 397.739 12.2613 393.412 10.2362 387.922C9 384.572 9 380.381 9 372V99.75Z"

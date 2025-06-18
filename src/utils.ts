@@ -34,7 +34,7 @@ export function roundAndCheckForNaN(unrounded) {
 
 // Validate, sanitize, round and dedupe snap points, as well as extracting the minSnap and maxSnap points
 export function processSnapPoints(unsafeSnaps: number | number[], maxHeight) {
-  const safeSnaps = [].concat(unsafeSnaps).map(roundAndCheckForNaN)
+  const safeSnaps = (Array.isArray(unsafeSnaps) ? unsafeSnaps : [unsafeSnaps]).map(roundAndCheckForNaN)
 
   const snapPointsDedupedSet = safeSnaps.reduce((acc, snapPoint) => {
     acc.add(clamp(snapPoint, 0, maxHeight))

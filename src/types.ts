@@ -163,7 +163,7 @@ export type Props = {
    */
   preventPullUp?: boolean,
 
-} & Omit<React.PropsWithoutRef<JSX.IntrinsicElements['div']>, 'children'>
+} & Omit<React.ComponentProps<'div'>, 'children'>
 
 export interface RefHandles {
   /**

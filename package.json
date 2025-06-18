@@ -22,8 +22,11 @@
     "build:dist": "npm run build:postcss && npm run build:microbundle && npm run build:declarations",
     "build:microbundle": "NODE_ENV=production microbundle --define process.env.NODE_ENV=production --tsconfig tsconfig.microbundle.json -f cjs,es,modern --css-modules false --jsx React.createElement --jsxFragment React.Fragment",
     "build:postcss": "postcss -d dist src/style.css",
-    "dev": "next",
-    "lint": "eslint . --ext ts,tsx,js,jsx --max-warnings 0 && tsc",
+    "dev": "next dev",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    "prebuild": "npm run lint && npm run type-check",
     "prepublishOnly": "npm run build:dist",
     "start": "next start",
     "test": "npm run prepublishOnly && npm run build"
@@ -44,7 +47,7 @@
     "xstate": "^5.19.4"
   },
   "peerDependencies": {
-    "react": "^16.14.0 || 17 || 18"
+    "react": "^16.14.0 || 17 || 18 || 19"
   },
   "devDependencies": {
     "@babel/core": "^7.27.4",
@@ -53,8 +56,9 @@
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@tailwindcss/forms": "^0.5.10",
-    "@types/node": "^20.19.1",
-    "@types/react": "^18.3.23",
+    "@types/node": "^22.15.32",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "@use-it/interval": "^1.0.0",
@@ -63,6 +67,7 @@
     "babel-plugin-transform-remove-console": "^6.9.4",
     "classnames": "^2.5.1",
     "eslint": "^8.57.1",
+    "eslint-config-next": "^15.3.3",
     "eslint-config-react-app": "^7.0.1",
     "eslint-plugin-flowtype": "^8.0.3",
     "eslint-plugin-import": "^2.31.0",
@@ -72,7 +77,7 @@
     "husky": "^8.0.3",
     "lint-staged": "^13.3.0",
     "microbundle": "^0.15.1",
-    "next": "^13.5.11",
+    "next": "^15.3.3",
     "postcss": "^8.5.6",
     "postcss-cli": "^10.1.0",
     "postcss-custom-properties-fallback": "^1.0.2",
@@ -80,8 +85,8 @@
     "postcss-preset-env": "^9.6.0",
     "prettier": "^3.5.3",
     "prettier-package-json": "^2.8.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "rimraf": "^5.0.10",
     "semantic-release": "^21.1.2",
     "smooth-scroll-into-view-if-needed": "^2.0.2",
