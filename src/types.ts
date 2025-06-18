@@ -35,6 +35,68 @@ export type defaultSnapProps = {
   lastSnap: number | null
 } & SnapPointProps
 
+// React Spring configuration type
+export type SpringConfig = {
+  /**
+   * Animation duration in milliseconds
+   */
+  duration?: number
+  /**
+   * Easing function
+   */
+  easing?: (t: number) => number
+  /**
+   * Mass of the object
+   * @default 1
+   */
+  mass?: number
+  /**
+   * Tension controls the speed of the spring
+   * @default 170
+   */
+  tension?: number
+  /**
+   * Friction controls the damping
+   * @default 26
+   */
+  friction?: number
+  /**
+   * Whether to clamp the spring value
+   * @default true
+   */
+  clamp?: boolean
+  /**
+   * Precision of the animation
+   * @default 0.01
+   */
+  precision?: number
+  /**
+   * Initial velocity
+   * @default 0
+   */
+  velocity?: number
+  /**
+   * Whether to limit the animation to the bounds
+   * @default false
+   */
+  bounce?: number
+  /**
+   * Damping ratio
+   * @default 1
+   */
+  damping?: number
+  /**
+   * Rest velocity
+   * @default 0.001
+   */
+  restVelocity?: number
+  /**
+   * Rest displacement
+   * @default 0.001
+   */
+  restDisplacement?: number
+}
+
 /* Might make sense to expose a preventDefault method here */
 export type SpringEvent =
   | { type: 'OPEN' }
@@ -162,6 +224,30 @@ export type Props = {
    * @default preventPullUp === false
    */
   preventPullUp?: boolean,
+
+  /**
+   * Custom React Spring configuration to override default animation settings.
+   * This config will be merged with the default configuration, allowing for fine-tuned control
+   * over the animation behavior including timing, easing, and physics properties.
+   * 
+   * @example
+   * // Slower, bouncy animation
+   * springConfig={{
+   *   tension: 100,
+   *   friction: 50,
+   *   mass: 2
+   * }}
+   * 
+   * @example
+   * // Fast, snappy animation
+   * springConfig={{
+   *   tension: 300,
+   *   friction: 30
+   * }}
+   * 
+   * @default { mass: 1, tension: 170, friction: 26, clamp: true }
+   */
+  springConfig?: Partial<SpringConfig>
 
 } & Omit<React.ComponentProps<'div'>, 'children'>
 

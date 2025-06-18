@@ -234,6 +234,61 @@ Type: `boolean`
 
 Disabled by default. By default, a user can expand the bottom sheet only by dragging a header or the overlay. This option enables expanding the bottom sheet on the content dragging.
 
+### springConfig
+
+Type: `Partial<SpringConfig>`
+
+Allows you to customize the React Spring animation configuration for fine-tuned control over how the bottom sheet animates. This configuration is merged with the default settings, so you only need to specify the properties you want to override.
+
+The configuration affects all animations including opening, closing, snapping to different heights, and responding to drag gestures.
+
+```jsx
+import { BottomSheet, BottomSheetSpringConfig } from 'react-spring-bottom-sheet'
+
+// Bouncy animation
+const bouncy: BottomSheetSpringConfig = {
+  tension: 80,
+  friction: 60,
+  mass: 2,
+}
+
+// Fast and snappy animation  
+const fast: BottomSheetSpringConfig = {
+  tension: 300,
+  friction: 30,
+  mass: 0.8,
+}
+
+// Smooth and precise animation
+const smooth: BottomSheetSpringConfig = {
+  tension: 120,
+  friction: 50,
+  mass: 1.5,
+  precision: 0.001,
+}
+
+function Example() {
+  return (
+    <BottomSheet 
+      open={true} 
+      springConfig={bouncy}
+    >
+      Content with bouncy animations
+    </BottomSheet>
+  )
+}
+```
+
+Available configuration properties:
+- `mass` (default: 1) - Mass of the object
+- `tension` (default: 170) - Controls the speed of the spring
+- `friction` (default: 26) - Controls the damping 
+- `clamp` (default: true) - Whether to clamp the spring value
+- `precision` (default: 0.01) - Precision of the animation
+- `velocity` (default: 0) - Initial velocity
+- `duration` - Animation duration in milliseconds (overrides spring physics)
+- `easing` - Easing function for duration-based animations
+
 ## Events
 
 All events receive `SpringEvent` as their argument. The payload varies, but `type` is always present, which can be `'OPEN' | 'RESIZE' | 'SNAP' | 'CLOSE'` depending on the scenario.

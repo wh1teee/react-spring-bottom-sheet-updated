@@ -12,6 +12,7 @@ import React, {
   useEffect,
   useImperativeHandle,
   useRef,
+  useMemo,
 } from 'react'
 import { animated, config } from '@react-spring/web'
 import { rubberbandIfOutOfBounds, useDrag } from '@use-gesture/react'
@@ -33,6 +34,7 @@ import type {
   RefHandles,
   ResizeSource,
   SnapPointProps,
+  SpringConfig,
 } from './types'
 
 
@@ -72,10 +74,27 @@ export const BottomSheet = React.forwardRef<
     expandOnContentDrag = false,
     disableExpandList = [],
     preventPullUp = false,
+    springConfig: customSpringConfig,
     ...props
   },
   forwardRef
 ) => {
+  // Default spring configuration that can be overridden by user
+  const defaultSpringConfig: SpringConfig = useMemo(() => ({
+    mass: 1,
+    tension,
+    friction,
+    clamp: true,
+    precision: 0.01,
+    velocity: 0,
+  }), [])
+
+  // Merge custom config with default config
+  const springConfig = useMemo(() => ({
+    ...defaultSpringConfig,
+    ...customSpringConfig,
+  }), [defaultSpringConfig, customSpringConfig])
+
   // Before any animations can start we need to measure a few things, like the viewport and the dimensions of content, and header + footer if they exist
   // @TODO make ready its own state perhaps, before open or closed
   const { ready, registerReady } = useReady()
@@ -160,24 +179,16 @@ export const BottomSheet = React.forwardRef<
   // New utility for using events safely
   const asyncSet = useCallback<typeof set>(
     // @ts-ignore
-    ({ onRest, config: { velocity = 1, ...config } = {}, ...opts }) =>
+    ({ onRest, config: configOverride, ...opts }) =>
       // @ts-expect-error
       new Promise((resolve) =>
         set.start({
           ...opts,
           config: {
-            velocity,
-            ...config,
-            // @see https://springs.pomb.us
-            mass: 1,
-            // "stiffness"
-            clamp: true,
-            tension,
-            // "damping"
-            friction: Math.max(
-              friction,
-              friction + (friction - friction * velocity)
-            ),
+            // Use merged spring config as base
+            ...springConfig,
+            // Allow per-call config overrides
+            ...configOverride,
           },
           onRest: (...args) => {
             // @ts-expect-error
@@ -186,7 +197,7 @@ export const BottomSheet = React.forwardRef<
           },
         })
       ),
-    [set]
+    [set, springConfig]
   )
   const [current, send] = useMachine(overlayMachine.provide({
     actions: {
