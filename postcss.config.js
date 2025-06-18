@@ -16,7 +16,7 @@ export default {
         'custom-properties': false, // Let fallback plugin handle this
       },
     },
-    'postcss-import-svg': {
+    'postcss-inline-svg': {
       paths: [resolve(__dirname, 'docs')],
       svgo: {
         plugins: [

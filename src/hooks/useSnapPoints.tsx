@@ -7,11 +7,9 @@ import {
   useRef,
   useState,
 } from 'react'
-import { ResizeObserver, type ResizeObserverEntry } from '@juggle/resize-observer'
 import type { defaultSnapProps, ResizeSource, snapPoints } from '../types'
 import { processSnapPoints, roundAndCheckForNaN } from '../utils'
 import type { useReady } from './useReady'
-import type { ResizeObserverOptions } from '@juggle/resize-observer/lib/ResizeObserverOptions'
 import { useLayoutEffect } from './useLayoutEffect'
 
 export function useSnapPoints({
@@ -181,7 +179,7 @@ function useDimensions({
 const observerOptions: ResizeObserverOptions = {
   // Respond to changes to padding, happens often on iOS when using env(safe-area-inset-bottom)
   // And the user hides or shows the Safari browser toolbar
-  box: 'border-box',
+  box: 'border-box' as ResizeObserverBoxOptions,
 }
 /**
  * Hook for determining the size of an element using the Resize Observer API.

@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
   
   // Since we're using Pages Router, ensure proper static optimization
   experimental: {
-    optimizePackageImports: ['react-spring', '@use-gesture/react'],
+    optimizePackageImports: ['@react-spring/web', '@use-gesture/react'],
   },
   
   // Modern image optimization
