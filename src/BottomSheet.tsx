@@ -171,6 +171,7 @@ export const BottomSheet = React.forwardRef<
             // @see https://springs.pomb.us
             mass: 1,
             // "stiffness"
+            clamp: true,
             tension,
             // "damping"
             friction: Math.max(
@@ -537,7 +538,7 @@ export const BottomSheet = React.forwardRef<
     if (
       !down &&
       onDismiss &&
-      direction > 0 &&
+      direction >= 0 &&
       rawY + predictedDistance < minSnapRef.current / 2
       && (!hasScroll || scrollRef.current.scrollTop <= 0)
     ) {
@@ -601,26 +602,16 @@ export const BottomSheet = React.forwardRef<
     }
 
     if (last) {
-      // Find the closest snap point to the predicted position
-      let snapY
-      if (Number.isFinite(newY)) {
-        snapY = findSnapRef.current(newY)
-        console.log('🔍 SNAP DEBUG:', { 
-          newY, 
-          snapY, 
-          minSnap: minSnapRef.current, 
-          maxSnap: maxSnapRef.current,
-          velocity: safeVelocity > 0.05 ? safeVelocity : 1
-        })
-      } else {
-        snapY = minSnapRef.current
-        console.log('⚠️ SNAP DEBUG: newY is not finite, using minSnap:', snapY)
-      }
-      
+      console.log('🎬 DRAG END - sending SNAP event with:', {
+        y: newY,
+        velocity: safeVelocity > 0.05 ? safeVelocity : 1,
+        source: 'dragging',
+      });
+
       send({
         type: 'SNAP',
         payload: {
-          y: snapY,
+          y: newY,
           velocity: safeVelocity > 0.05 ? safeVelocity : 1,
           source: 'dragging',
         },
