@@ -4,7 +4,7 @@ import styles from './SnapMarker.module.css'
 
 const SnapMarker = forwardRef<
   HTMLSpanElement,
-  Omit<React.PropsWithoutRef<JSX.IntrinsicElements['span']>, 'children'>
+  Omit<React.ComponentProps<'span'>, 'children'>
 >(({ className, ...props }, ref) => (
   <span
     className={cx(

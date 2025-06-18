@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-pascal-case */
-import * as Portal from '@radix-ui/react-portal';
+import { Root as PortalRoot } from '@radix-ui/react-portal';
 import React, { forwardRef, useRef, useState, useCallback } from 'react'
 import { BottomSheet as _BottomSheet } from './BottomSheet'
 import type { Props, RefHandles, SpringEvent } from './types'
@@ -17,12 +17,13 @@ export const BottomSheet = forwardRef<RefHandles, Props>(function BottomSheet(
 ) {
   // Mounted state, helps SSR but also ensures you can't tab into the sheet while it's closed, or nav there in a screen reader
   const [mounted, setMounted] = useState(false)
-  const timerRef = useRef<ReturnType<typeof requestAnimationFrame>>()
+  const timerRef = useRef<ReturnType<typeof requestAnimationFrame> | undefined>(undefined)
   // The last point that the user snapped to, useful for open/closed toggling and the user defined height is remembered
   const lastSnapRef = useRef(null)
   // @TODO refactor to an initialState: OPEN | CLOSED property as it's much easier to understand
   // And informs what we should animate from. If the sheet is mounted with open = true, then initialState = OPEN.
   // When initialState = CLOSED, then internal sheet must first render with open={false} before setting open={props.open}
+  // It's only when initialState = OPEN, then skipInitialTransition = true should be used
   // It's only when initialState and props.open is mismatching that a intial transition should happen
   // If they match then transitions will only happen when a user interaction or resize event happen.
   const initialStateRef = useRef<'OPEN' | 'CLOSED'>(
@@ -32,7 +33,9 @@ export const BottomSheet = forwardRef<RefHandles, Props>(function BottomSheet(
   // Using layout effect to support cases where the bottom sheet have to appear already open, no transition
   useLayoutEffect(() => {
     if (props.open) {
-      cancelAnimationFrame(timerRef.current)
+      if (timerRef.current !== undefined) {
+        cancelAnimationFrame(timerRef.current)
+      }
       setMounted(true)
 
       // Cleanup defaultOpen state on close
@@ -49,7 +52,9 @@ export const BottomSheet = forwardRef<RefHandles, Props>(function BottomSheet(
 
       if (event.type === 'OPEN') {
         // Ensures that when it's opening we abort any pending unmount action
-        cancelAnimationFrame(timerRef.current)
+        if (timerRef.current !== undefined) {
+          cancelAnimationFrame(timerRef.current)
+        }
       }
     },
     [onSpringStart]
@@ -73,8 +78,11 @@ export const BottomSheet = forwardRef<RefHandles, Props>(function BottomSheet(
     return null
   }
 
+  // React 19 compatibility: Type assertion for PortalRoot JSX component
+  const PortalRootComponent = PortalRoot as React.ComponentType<any>
+
   return (
-    <Portal.Root data-rsbs-portal>
+    <PortalRootComponent {...({ 'data-rsbs-portal': true } as any)}>
       <_BottomSheet
         {...props}
         lastSnapRef={lastSnapRef}
@@ -83,6 +91,6 @@ export const BottomSheet = forwardRef<RefHandles, Props>(function BottomSheet(
         onSpringStart={handleSpringStart}
         onSpringEnd={handleSpringEnd}
       />
-    </Portal.Root>
+    </PortalRootComponent>
   )
 })

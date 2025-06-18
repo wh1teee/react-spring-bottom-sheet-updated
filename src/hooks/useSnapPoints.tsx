@@ -83,6 +83,13 @@ export function useSnapPoints({
     } else {
       unsafeSearch = numberOrCallback
     }
+    
+    // Add safety check for NaN values
+    if (!Number.isFinite(unsafeSearch)) {
+      console.warn('findSnap received invalid value:', unsafeSearch, 'using minSnap instead')
+      return minSnap
+    }
+    
     const querySnap = roundAndCheckForNaN(unsafeSearch)
     return snapPoints.reduce(
       (prev, curr) =>
@@ -140,10 +147,18 @@ function useDimensions({
     enabled: footerEnabled,
     resizeSourceRef,
   })
-  const minHeight =
-    Math.min(maxHeight - headerHeight - footerHeight, contentHeight) +
-    headerHeight +
-    footerHeight
+  const minHeight = (() => {
+    // Ensure all values are finite numbers before calculation
+    const safeMaxHeight = Number.isFinite(maxHeight) ? maxHeight : 0
+    const safeHeaderHeight = Number.isFinite(headerHeight) ? headerHeight : 0
+    const safeFooterHeight = Number.isFinite(footerHeight) ? footerHeight : 0
+    const safeContentHeight = Number.isFinite(contentHeight) ? contentHeight : 0
+    
+    const calculated = Math.min(safeMaxHeight - safeHeaderHeight - safeFooterHeight, safeContentHeight) + 
+                      safeHeaderHeight + safeFooterHeight
+    
+    return Number.isFinite(calculated) ? calculated : 0
+  })()
 
   useDebugValue(`minHeight: ${minHeight}`)
 
