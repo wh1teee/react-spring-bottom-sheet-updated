@@ -1,26 +1,37 @@
-import { useDebugValue, useEffect, useMemo, useRef } from 'react'
+import { RefObject, useDebugValue, useEffect, useRef } from 'react'
 
-// @TODO refactor to addEventListener
-export function useReducedMotion() {
-  const mql = useMemo(
-    () =>
-      typeof window !== 'undefined'
-        ? window.matchMedia('(prefers-reduced-motion: reduce)')
-        : null,
-    []
+/**
+ * Hook to detect user's prefers-reduced-motion browser setting
+ * @returns RefObject<boolean> - ref.current is true if user prefers reduced motion
+ */
+export function useReducedMotion(): RefObject<boolean> {
+  const prefersReducedMotionRef = useRef<boolean>(
+    typeof window !== 'undefined'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false
   )
-  const ref = useRef(mql?.matches)
 
-  useDebugValue(ref.current ? 'reduce' : 'no-preference')
+  useDebugValue(prefersReducedMotionRef.current ? 'reduce' : 'no-preference')
 
   useEffect(() => {
-    const handler = (event) => {
-      ref.current = event.matches
+    if (typeof window === 'undefined') {
+      return
     }
-    mql?.addListener(handler)
 
-    return () => mql?.removeListener(handler)
-  }, [mql])
+    const mediaQueryList = window.matchMedia('(prefers-reduced-motion: reduce)')
+    
+    const handleChange = (event: MediaQueryListEvent) => {
+      prefersReducedMotionRef.current = event.matches
+    }
 
-  return ref
+    prefersReducedMotionRef.current = mediaQueryList.matches
+
+    mediaQueryList.addEventListener('change', handleChange)
+
+    return () => {
+      mediaQueryList.removeEventListener('change', handleChange)
+    }
+  }, [])
+
+  return prefersReducedMotionRef
 }

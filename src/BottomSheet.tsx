@@ -7,11 +7,14 @@
 
 import { useMachine } from '@xstate/react'
 import { fromPromise } from 'xstate'
-import React, {
+import {
   useCallback,
   useEffect,
   useImperativeHandle,
   useRef,
+  useMemo,
+  forwardRef,
+  RefObject,
 } from 'react'
 import { animated, config } from '@react-spring/web'
 import { rubberbandIfOutOfBounds, useDrag } from '@use-gesture/react'
@@ -33,19 +36,27 @@ import type {
   RefHandles,
   ResizeSource,
   SnapPointProps,
+  SpringConfig,
 } from './types'
 
-
-const { tension, friction } = config.default
+// Default spring configuration that can be overridden by user
+// Uses React Spring's official defaults as base, adds only critical parameters
+const defaultSpringConfig: SpringConfig = {
+  ...config.default,
+  mass: 1,
+  clamp: true,     // Critical: prevents animation from going out of bounds
+  precision: 0.01, // Important: controls animation smoothness and completion
+  velocity: 0,
+}
 
 // @TODO implement AbortController to deal with race conditions
 
 // @TODO rename to SpringBottomSheet and allow userland to import it directly, for those who want maximum control and minimal bundlesize
-export const BottomSheet = React.forwardRef<
+export const BottomSheet = forwardRef<
   RefHandles,
   {
     initialState: 'OPEN' | 'CLOSED'
-    lastSnapRef: React.MutableRefObject<number | null>
+    lastSnapRef: RefObject<number | null>
   } & Props
 >((
   {
@@ -72,10 +83,17 @@ export const BottomSheet = React.forwardRef<
     expandOnContentDrag = false,
     disableExpandList = [],
     preventPullUp = false,
+    springConfig: customSpringConfig,
     ...props
   },
   forwardRef
 ) => {
+  // Merge custom config with default config
+  const springConfig = useMemo(() => ({
+    ...defaultSpringConfig,
+    ...customSpringConfig,
+  }), [customSpringConfig])
+
   // Before any animations can start we need to measure a few things, like the viewport and the dimensions of content, and header + footer if they exist
   // @TODO make ready its own state perhaps, before open or closed
   const { ready, registerReady } = useReady()
@@ -160,24 +178,16 @@ export const BottomSheet = React.forwardRef<
   // New utility for using events safely
   const asyncSet = useCallback<typeof set>(
     // @ts-ignore
-    ({ onRest, config: { velocity = 1, ...config } = {}, ...opts }) =>
+    ({ onRest, config: configOverride, ...opts }) =>
       // @ts-expect-error
       new Promise((resolve) =>
         set.start({
           ...opts,
           config: {
-            velocity,
-            ...config,
-            // @see https://springs.pomb.us
-            mass: 1,
-            // "stiffness"
-            clamp: true,
-            tension,
-            // "damping"
-            friction: Math.max(
-              friction,
-              friction + (friction - friction * velocity)
-            ),
+            // Use merged spring config as base
+            ...springConfig,
+            // Allow per-call config overrides
+            ...configOverride,
           },
           onRest: (...args) => {
             // @ts-expect-error
@@ -186,7 +196,7 @@ export const BottomSheet = React.forwardRef<
           },
         })
       ),
-    [set]
+    [set, springConfig]
   )
   const [current, send] = useMachine(overlayMachine.provide({
     actions: {
@@ -343,7 +353,6 @@ export const BottomSheet = React.forwardRef<
           maxSnap: maxSnapRef.current,
           minSnap: minSnapRef.current,
           immediate: prefersReducedMotion.current,
-          config: { velocity: input?.velocity || 1 },
         })
       }),
       resizeSmoothly: fromPromise(async () => {
