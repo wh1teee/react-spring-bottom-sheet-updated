@@ -1,8 +1,8 @@
-name: Release and Publish
+name: Pre-release from Develop
 
 on:
   push:
-    branches: [main]
+    branches: [develop]
 
 jobs:
   test:
@@ -36,8 +36,8 @@ jobs:
       - name: Test
         run: pnpm test
 
-  release:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  prerelease:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     needs: [test]
     permissions:
@@ -69,11 +69,11 @@ jobs:
       - name: Build package
         run: pnpm build:dist
 
-      - name: Semantic Release
+      - name: Semantic Pre-release
         uses: cycjimmy/semantic-release-action@v4
         with:
           semantic_version: 21
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} 

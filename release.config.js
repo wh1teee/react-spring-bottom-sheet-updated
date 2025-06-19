@@ -1,4 +1,5 @@
 module.exports = {
+  repositoryUrl: 'https://github.com/wh1teee/react-spring-bottom-sheet-updated',
   plugins: [
     '@semantic-release/commit-analyzer',
     '@semantic-release/release-notes-generator',
@@ -18,5 +19,8 @@ module.exports = {
     '@semantic-release/git',
   ],
   preset: 'angular',
-  branches: ['main'],
+  branches: [
+    { name: 'main' },
+    { name: 'develop', prerelease: 'beta' }
+  ],
 }
