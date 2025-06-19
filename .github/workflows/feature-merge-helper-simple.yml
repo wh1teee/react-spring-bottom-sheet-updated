@@ -1,0 +1,79 @@
+name: Feature Branch Validation (Simple)
+
+on:
+  pull_request:
+    branches: [develop]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate PR Title
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Types that trigger version bumps
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+          # Require a scope for better organization
+          requireScope: false
+          # The title should follow conventional commits
+          validateSingleCommit: false
+
+      - name: Display merge instructions
+        run: |
+          echo "🚀 PR Title Validation Passed!"
+          echo ""
+          echo "📝 When squash merging, use one of these commit formats:"
+          echo "  feat: description  → Minor version bump (3.6.0 → 3.7.0-beta.1)"
+          echo "  fix: description   → Patch version bump (3.6.0 → 3.6.1-beta.1)"
+          echo "  feat!: description → Major version bump (3.6.0 → 4.0.0-beta.1)"
+          echo ""
+          echo "🎯 Current PR would suggest: fix: react unexist on build"
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm type-check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test 
