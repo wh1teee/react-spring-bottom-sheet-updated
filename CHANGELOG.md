@@ -1,3 +1,37 @@
+# [4.0.0-beta.1](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v3.4.1...v4.0.0-beta.1) (2025-06-19)
+
+
+### Bug Fixes
+
+* add missing packages field to pnpm workspace configuration ([4a4ba7d](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/4a4ba7d3996bf1c2667134302322d37f0d46c0c8))
+* can be clicked through the overlay on IOS ([b9a2d95](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/b9a2d959c12168f5b8b073391504bbbee2168543))
+* change semantic-release config to CommonJS format (.cjs extension) for compatibility with semantic-release-action ([868dabf](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/868dabf9d628061bea14eb6e0be2f1b1b7e25a3b))
+* sheet did not close when drag event ([f427c44](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/f427c44a63367dc337d149100b551a3e0a5466ce))
+* use --no-frozen-lockfile to resolve CI lockfile compatibility issues ([7ea2e80](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/7ea2e804c2d6d5624e7de6d42e096be8373e7c3c))
+
+
+* feat!: major update ([dd286ca](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/dd286ca9b68e4cb5f112ff50f011f6e4c3746d99))
+
+
+### Features
+
+* add springConfig prop for custom React Spring configuration ([3f8b4eb](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/3f8b4eba7bfe0401bacf14571540fc01a06a35a0))
+* modernize dependencies for 2025 standards - SVGO 1.3.2→3.3.2, react-spring→@react-spring/web, remove body-scroll-lock+@juggle/resize-observer, update PostCSS, fix SVGO compatibility issues ([5a18052](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/5a180525a2ff44e29d4b20cc620a5d4da05382f6))
+* version 4.0.0 major release with breaking changes ([e06a4bc](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/e06a4bc2b62a10b082634e46ab6e910c83a39059))
+
+
+### Performance Improvements
+
+* optimize defaultSpringConfig by moving it outside component ([7439a6d](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/7439a6d5e73c7aaff92e1ecc79feb73b3259857e))
+
+
+### BREAKING CHANGES
+
+* - Modern React 19 support
+- Updated dependencies and build tools
+- Rebranded as react-spring-bottom-sheet-updated
+- Enhanced TypeScript definitions
+
 ## [3.4.1](https://github.com/stipsan/react-spring-bottom-sheet/compare/v3.4.0...v3.4.1) (2022-06-01)
 
 
