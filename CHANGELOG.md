@@ -1,3 +1,12 @@
+# [4.0.0-beta.2](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.1...v4.0.0-beta.2) (2025-06-19)
+
+
+### Bug Fixes
+
+* add permissions to GitHub Actions workflow for PR comments ([c1504b6](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/c1504b60d5e854d5b56b7d3223174442d04c3f2b))
+* react unexist on build ([cc30086](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/cc3008648c14bff85bb7becf8829694c98070d89))
+* resolve React import issues and update GitHub Actions - Add React import to BottomSheet.tsx for React.RefObject types - Fix microbundle configuration for proper JSX handling - Update pnpm version in all GitHub Actions workflows to latest - Regenerate pnpm-lock.yaml for compatibility - Configure tsconfig.microbundle.json for isolated builds ([f1391a2](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/f1391a2e092c1dd303bb147806b42de60c1ee7e6))
+
 # [4.0.0-beta.1](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v3.4.1...v4.0.0-beta.1) (2025-06-19)
 
 
