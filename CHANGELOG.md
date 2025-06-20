@@ -1,3 +1,10 @@
+# [4.0.0-beta.3](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.2...v4.0.0-beta.3) (2025-06-20)
+
+
+### Bug Fixes
+
+* react 'use client' ([3cecdd5](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/3cecdd586a726d0cb22c7a2961984f2a7526257b))
+
 # [4.0.0-beta.2](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.1...v4.0.0-beta.2) (2025-06-19)
 
 
