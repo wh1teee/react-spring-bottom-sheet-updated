@@ -102,6 +102,9 @@ export const BottomSheet = forwardRef<
   // Controls the drag handler, used by spring operations that happen outside the render loop in React
   const canDragRef = useRef(false)
 
+  // Add cleanup for any pending setTimeout from handleDrag
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
   // This way apps don't have to remember to wrap their callbacks in useCallback to avoid breaking the sheet
   const onSpringStartRef = useRef(onSpringStart)
   const onSpringCancelRef = useRef(onSpringCancel)
@@ -412,12 +415,22 @@ export const BottomSheet = forwardRef<
   }, [maxHeight, maxSnap, minSnap, send])
   useEffect(
     () => () => {
-      // Ensure effects are cleaned up on unmount, in case they're not cleaned up otherwise
+      try {
+        set.stop()
+      } catch (error) {
+        console.warn('Spring cleanup warning:', error)
+      }
+      
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+      
       scrollLockRef.current.deactivate()
       focusTrapRef.current.deactivate()
       ariaHiderRef.current.deactivate()
     },
-    [ariaHiderRef, focusTrapRef, scrollLockRef]
+    [set, ariaHiderRef, focusTrapRef, scrollLockRef]
   )
 
   useImperativeHandle(
@@ -528,8 +541,10 @@ export const BottomSheet = forwardRef<
 
     if (onDismiss && closeOnTap && tap) {
       cancel()
-      // Runs onDismiss in a timeout to avoid tap events on the backdrop from triggering click events on elements underneath
-      setTimeout(() => onDismiss(), 10)
+      timeoutRef.current = setTimeout(() => {
+        onDismiss()
+        timeoutRef.current = null
+      }, 10)
       return memo
     }
 
