@@ -541,6 +541,11 @@ export const BottomSheet = forwardRef<
 
     if (onDismiss && closeOnTap && tap) {
       cancel()
+      
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+      
       timeoutRef.current = setTimeout(() => {
         onDismiss()
         timeoutRef.current = null
