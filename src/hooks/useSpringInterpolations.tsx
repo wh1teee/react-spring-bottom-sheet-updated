@@ -1,3 +1,5 @@
+'use client'
+
 import { to } from '@react-spring/web'
 import type { Spring } from './useSpring'
 import { clamp } from '../utils'

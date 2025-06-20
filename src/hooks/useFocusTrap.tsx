@@ -1,3 +1,5 @@
+'use client'
+
 import { createFocusTrap } from 'focus-trap'
 import { useDebugValue, useEffect, useRef } from 'react'
 

@@ -1,4 +1,6 @@
-import type React from 'react';
+'use client'
+
+import type React from 'react'
 import { useDebugValue, useEffect, useRef } from 'react'
 
 // Handle hiding and restoring aria-hidden attributes

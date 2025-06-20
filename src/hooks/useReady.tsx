@@ -1,3 +1,4 @@
+'use client'
 // Keeps track of wether everything is good to go or not, in the most efficient way possible
 
 import { useCallback, useEffect, useState } from 'react'

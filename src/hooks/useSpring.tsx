@@ -1,3 +1,5 @@
+'use client'
+
 import { useSpring as useReactSpring, useSpringRef } from '@react-spring/web'
 
 // Behold, the engine of it all!
