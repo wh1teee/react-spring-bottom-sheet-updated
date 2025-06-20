@@ -1,3 +1,4 @@
+'use client'
 //
 // In order to greatly reduce complexity this component is designed to always transition to open on mount, and then
 // transition to a closed state later. This ensures that all memory used to keep track of animation and gesture state

@@ -1,3 +1,5 @@
+'use client'
+
 import { RefObject, useDebugValue, useEffect, useRef } from 'react'
 
 /**
