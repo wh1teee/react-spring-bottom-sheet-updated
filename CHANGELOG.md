@@ -1,3 +1,11 @@
+# [4.0.0-beta.4](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.3...v4.0.0-beta.4) (2025-06-20)
+
+
+### Bug Fixes
+
+* cleanup timeout handling in BottomSheet unmount logic ([924b5a8](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/924b5a85a48873ca9807b0bd7d59bd414207d272))
+* clear timeout on tap dismiss in BottomSheet to prevent potential memory leaks ([94ec6f7](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/94ec6f7583c8a82a099d34c0ddddd92c2d04724a))
+
 # [4.0.0-beta.3](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.2...v4.0.0-beta.3) (2025-06-20)
 
 
