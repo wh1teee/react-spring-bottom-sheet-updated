@@ -28,13 +28,13 @@ const Links = ({ className }: { className?: string }) => (
   <>
     <Link
       className={className}
-      href="https://github.com/stipsan/react-spring-bottom-sheet/blob/main/GET_STARTED.md#get-started"
+      href="https://github.com/wh1teee/react-spring-bottom-sheet-updated/blob/main/GET_STARTED.md#get-started"
     >
       Get started
     </Link>
     <Link
       className={className}
-      href="https://github.com/stipsan/react-spring-bottom-sheet"
+      href="https://github.com/wh1teee/react-spring-bottom-sheet-updated"
     >
       GitHub
     </Link>
