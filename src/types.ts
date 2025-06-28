@@ -28,6 +28,26 @@ export type snapPoints = (props: SnapPointProps) => number[] | number
  */
 export type ResizeSource = 'window' | 'maxheightprop' | 'element'
 
+// Gesture handler types
+export interface GestureState {
+  args: Array<{ closeOnTap?: boolean; isContentDragging?: boolean }>
+  cancel: () => void
+  direction: [number, number]
+  down: boolean
+  first: boolean
+  last: boolean
+  memo?: number
+  movement: [number, number]
+  tap: boolean
+  velocity: number
+  event: Event
+}
+
+export interface DragHandlerOptions {
+  closeOnTap?: boolean
+  isContentDragging?: boolean
+}
+
 export type defaultSnapProps = {
   /** The snap points currently in use, this can be controlled by providing a `snapPoints` function on the bottom sheet. */
   snapPoints: number[]
@@ -157,7 +177,7 @@ export type Props = {
    * A reference to the element that should be focused. By default it'll be the first interactive element.
    * Set to false to disable keyboard focus when opening.
    */
-  initialFocusRef?: React.RefObject<HTMLElement> | false
+  initialFocusRef?: React.RefObject<HTMLElement> | false | undefined
 
   /**
    * Handler that is called when the user presses *esc*, clicks outside the dialog or drags the sheet to the bottom of the display.

@@ -209,7 +209,7 @@ export const BottomSheet = forwardRef<
         []
       ),
       onSnapCancel: useCallback(
-        ({ context }) =>
+        ({ context }: { context: { snapSource: string } }) =>
           onSpringCancelRef.current?.({
             type: 'SNAP',
             source: context.snapSource,
@@ -233,7 +233,7 @@ export const BottomSheet = forwardRef<
         []
       ),
       onSnapEnd: useCallback(
-        ({ context }, _event) =>
+        ({ context }: { context: { snapSource: string } }, _event: unknown) =>
           onSpringEndRef.current?.({
             type: 'SNAP',
             source: context.snapSource,
@@ -457,10 +457,10 @@ export const BottomSheet = forwardRef<
     const elem = scrollRef.current
     if (!elem) return
 
-    const preventScrolling = e => {
+    const preventScrolling = (e: Event) => {
       if (containerRef.current) {
         const disableExpandListNodes = disableExpandList.map(selector => containerRef.current!.querySelector(selector)).filter(Boolean);
-        if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode && disableNode.contains(e.target))) {
+        if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode && disableNode.contains(e.target as Node))) {
           return true
         }
       }
@@ -470,13 +470,13 @@ export const BottomSheet = forwardRef<
     }
 
     let prevValue = 0;
-    const preventSafariOverscrollOnStart = _e => {
+    const preventSafariOverscrollOnStart = (_e: Event) => {
       if (elem.scrollTop < 0) {
         prevValue = elem.scrollTop;
       }
     }
   
-    const preventSafariOverscrollOnMove = (e) => {
+    const preventSafariOverscrollOnMove = (e: Event) => {
       if (elem.scrollTop < 0 && elem.scrollTop < prevValue) {
         e.preventDefault();
       }
@@ -512,6 +512,18 @@ export const BottomSheet = forwardRef<
     tap,
     velocity,
     event,
+  }: {
+    args: Array<{ closeOnTap?: boolean; isContentDragging?: boolean }>
+    cancel: () => void
+    direction: [number, number]
+    down: boolean
+    first: boolean
+    last: boolean
+    memo?: number
+    movement: [number, number]
+    tap: boolean
+    velocity: number
+    event: Event
   }) => {
     // Ensure all values are finite numbers to prevent NaN calculations
     const my = Number.isFinite(_my) ? _my * -1 : 0
