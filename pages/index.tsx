@@ -4,6 +4,7 @@ import Hero from '../docs/Hero'
 import MetaTags from '../docs/MetaTags'
 import Nugget from '../docs/Nugget'
 import StickyNugget from '../docs/StickyNugget'
+import Link from 'next/link'
 import type { NextPage } from 'next'
 import type { GetStaticProps } from './_app'
 
@@ -85,6 +86,48 @@ const IndexPage: NextPage<GetStaticProps> = ({
           ]}
           example="/fixtures/aside"
         />
+      </div>
+      
+      {/* New Features Section */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 py-20">
+        <div className="max-w-5xl mx-auto px-8 text-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            🚀 New in Version 4.0.0
+          </h2>
+          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            Enhanced with React 19 support, improved memory management, and modern dependency updates
+          </p>
+          
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="font-semibold text-gray-900 mb-2">React 19 Compatible</h3>
+              <p className="text-sm text-gray-600">Full support for concurrent features, enhanced ref handling, and modern React patterns</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="font-semibold text-gray-900 mb-2">Memory Leak Prevention</h3>
+              <p className="text-sm text-gray-600">Enhanced cleanup logic prevents timeout-related memory leaks and ensures proper resource management</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="font-semibold text-gray-900 mb-2">Spring Configuration</h3>
+              <p className="text-sm text-gray-600">New springConfig prop allows fine-tuned control over animation behavior and feel</p>
+            </div>
+          </div>
+          
+          <div className="flex justify-center gap-4">
+            <Link 
+              href="/playground" 
+              className="bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+            >
+              Explore New Features
+            </Link>
+            <Link 
+              href="/playground/material-ui-integration" 
+              className="bg-purple-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-600 transition-colors"
+            >
+              Integration Examples
+            </Link>
+          </div>
+        </div>
       </div>
     </main>
     <Footer

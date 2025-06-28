@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { BottomSheet, BottomSheetSpringConfig } from '../../src'
+import { BottomSheet, type BottomSheetSpringConfig } from '../../src'
 import Button from '../../docs/fixtures/Button'
 
 export default function SpringConfigExample() {
