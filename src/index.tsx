@@ -14,7 +14,7 @@ export type {
 export const BottomSheet = forwardRef<RefHandles, Props>((
   { onSpringStart, onSpringEnd, skipInitialTransition, ...props },
   ref
-) => {
+): React.JSX.Element | null => {
   // Mounted state, helps SSR but also ensures you can't tab into the sheet while it's closed, or nav there in a screen reader
   const [mounted, setMounted] = useState(false)
   const timerRef = useRef<ReturnType<typeof requestAnimationFrame> | undefined>(undefined)
@@ -43,6 +43,8 @@ export const BottomSheet = forwardRef<RefHandles, Props>((
         initialStateRef.current = 'CLOSED'
       }
     }
+    // Return undefined when props.open is false
+    return undefined
   }, [props.open])
 
   const handleSpringStart = useCallback(

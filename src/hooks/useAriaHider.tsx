@@ -62,7 +62,7 @@ export function useAriaHider({
           if (originalValue === null) {
             node.removeAttribute('aria-hidden')
           } else {
-            node.setAttribute('aria-hidden', originalValue)
+            node.setAttribute('aria-hidden', originalValue!)
           }
         })
         originalValues = []

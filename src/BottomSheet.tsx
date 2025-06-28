@@ -142,16 +142,18 @@ export const BottomSheet = forwardRef<
     targetRef: containerRef as React.RefObject<Element>,
     enabled: ready && blocking,
   })
-  const focusTrapRef = useFocusTrap({
+  const focusTrapOptions: Parameters<typeof useFocusTrap>[0] = {
     targetRef: containerRef as React.RefObject<HTMLElement>,
     fallbackRef: overlayRef as React.RefObject<HTMLElement>,
-    initialFocusRef: initialFocusRef || undefined,
     enabled: ready && blocking && initialFocusRef !== false,
-  })
+  }
+  if (initialFocusRef && typeof initialFocusRef === 'object') {
+    focusTrapOptions.initialFocusRef = initialFocusRef
+  }
+  const focusTrapRef = useFocusTrap(focusTrapOptions)
 
-  const { minSnap, maxSnap, maxHeight, findSnap } = useSnapPoints({
+  const snapPointsOptions: Parameters<typeof useSnapPoints>[0] = {
     contentRef: contentRef as React.RefObject<Element>,
-    controlledMaxHeight,
     footerEnabled: !!footer,
     footerRef: footerRef as React.RefObject<Element>,
     getSnapPoints,
@@ -162,7 +164,11 @@ export const BottomSheet = forwardRef<
     ready,
     registerReady,
     resizeSourceRef,
-  })
+  }
+  if (controlledMaxHeight !== undefined) {
+    snapPointsOptions.controlledMaxHeight = controlledMaxHeight
+  }
+  const { minSnap, maxSnap, maxHeight, findSnap } = useSnapPoints(snapPointsOptions)
 
   // Setup refs that are used in cases where full control is needed over when a side effect is executed
   const maxHeightRef = useRef(maxHeight)
@@ -209,11 +215,13 @@ export const BottomSheet = forwardRef<
         []
       ),
       onSnapCancel: useCallback(
-        ({ context }: { context: { snapSource: string } }) =>
+        (params: any) => {
+          const { context } = params
           onSpringCancelRef.current?.({
             type: 'SNAP',
             source: context.snapSource,
-          }),
+          })
+        },
         []
       ),
       onCloseCancel: useCallback(
@@ -233,11 +241,13 @@ export const BottomSheet = forwardRef<
         []
       ),
       onSnapEnd: useCallback(
-        ({ context }: { context: { snapSource: string } }, _event: unknown) =>
+        (params: any, _event: unknown) => {
+          const { context } = params
           onSpringEndRef.current?.({
             type: 'SNAP',
             source: context.snapSource,
-          }),
+          })
+        },
         []
       ),
       onResizeEnd: useCallback(
@@ -457,7 +467,7 @@ export const BottomSheet = forwardRef<
     const elem = scrollRef.current
     if (!elem) return
 
-    const preventScrolling = (e: Event) => {
+    const preventScrolling = (e: Event): boolean => {
       if (containerRef.current) {
         const disableExpandListNodes = disableExpandList.map(selector => containerRef.current!.querySelector(selector)).filter(Boolean);
         if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode && disableNode.contains(e.target as Node))) {
@@ -467,6 +477,7 @@ export const BottomSheet = forwardRef<
       if (preventScrollingRef.current && elem.scrollTop <= 0) {
         e.preventDefault()
       }
+      return false
     }
 
     let prevValue = 0;
@@ -538,7 +549,7 @@ export const BottomSheet = forwardRef<
     const hasScroll = scrollRef.current.scrollHeight > scrollRef.current.clientHeight;
     if (containerRef.current && disableExpandList.length) {
       const disableExpandListNodes = disableExpandList.map(selector => containerRef.current!.querySelector(selector)).filter(Boolean);
-      if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode && disableNode.contains(event.target))) {
+      if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode && disableNode.contains(event.target as Node))) {
         cancel()
         return memo
       }
@@ -677,7 +688,7 @@ export const BottomSheet = forwardRef<
     return memo
   }
 
-  const bind = useDrag(handleDrag, {
+  const bind = useDrag(handleDrag as any, {
     filterTaps: true,
   })
 

@@ -31,21 +31,23 @@ export function useFocusTrap({
     }
 
     const fallback = fallbackRef.current
-    const trap = createFocusTrap(targetRef.current, {
-      onActivate:
-        process.env.NODE_ENV !== 'production'
-          ? () => {
-              console.log('focus activate')
-            }
-          : undefined,
-      // If initialFocusRef is manually specified we don't want the first tabbable element to receive focus if initialFocusRef can't be found
-      initialFocus: initialFocusRef
-        ? () => initialFocusRef?.current || fallback
-        : undefined,
+    const focusTrapOptions: any = {
       fallbackFocus: fallback,
       escapeDeactivates: false,
       clickOutsideDeactivates: false,
-    })
+    }
+
+    if (process.env.NODE_ENV !== 'production') {
+      focusTrapOptions.onActivate = () => {
+        console.log('focus activate')
+      }
+    }
+
+    if (initialFocusRef) {
+      focusTrapOptions.initialFocus = () => initialFocusRef?.current || fallback
+    }
+
+    const trap = createFocusTrap(targetRef.current, focusTrapOptions)
     let active = false
 
     ref.current = {

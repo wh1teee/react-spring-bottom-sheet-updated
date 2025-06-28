@@ -35,8 +35,8 @@ const openToResize = {
   RESIZE: { target: '#overlay.resizing', actions: 'onOpenEnd' },
 }
 
-const initiallyOpen = ({ context }) => context.initialState === 'OPEN'
-const initiallyClosed = ({ context }) => context.initialState === 'CLOSED'
+const initiallyOpen = ({ context }: { context: { initialState: string } }) => context.initialState === 'OPEN'
+const initiallyClosed = ({ context }: { context: { initialState: string } }) => context.initialState === 'CLOSED'
 
 // Copy paste the machine into https://xstate.js.org/viz/ to make sense of what's going on in here ;)
 
