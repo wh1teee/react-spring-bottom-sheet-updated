@@ -31,6 +31,13 @@ import {
   useSpringInterpolations,
 } from './hooks'
 import { overlayMachine } from './machines/overlay'
+import {
+  Backdrop,
+  SheetContainer,
+  HeaderWrapper,
+  FooterWrapper,
+  ContentWrapper,
+} from './performance'
 import type {
   defaultSnapProps,
   Props,
@@ -95,6 +102,11 @@ export const BottomSheet = forwardRef<
     ...customSpringConfig,
   }), [customSpringConfig])
 
+  // Memoize onDismiss to prevent unnecessary re-renders
+  const handleDismiss = useCallback((source: Parameters<typeof onDismiss>[0]) => {
+    onDismiss?.(source)
+  }, [onDismiss])
+
   // Before any animations can start we need to measure a few things, like the viewport and the dimensions of content, and header + footer if they exist
   // @TODO make ready its own state perhaps, before open or closed
   const { ready, registerReady } = useReady()
@@ -142,27 +154,40 @@ export const BottomSheet = forwardRef<
     targetRef: containerRef as React.RefObject<Element>,
     enabled: ready && blocking,
   })
-  const focusTrapRef = useFocusTrap({
-    targetRef: containerRef as React.RefObject<HTMLElement>,
-    fallbackRef: overlayRef as React.RefObject<HTMLElement>,
-    initialFocusRef: initialFocusRef || undefined,
-    enabled: ready && blocking && initialFocusRef !== false,
-  })
+  const focusTrapOptions = useMemo(() => {
+    const options: Parameters<typeof useFocusTrap>[0] = {
+      targetRef: containerRef as React.RefObject<HTMLElement>,
+      fallbackRef: overlayRef as React.RefObject<HTMLElement>,
+      enabled: ready && blocking && initialFocusRef !== false,
+    }
+    if (initialFocusRef && typeof initialFocusRef === 'object') {
+      options.initialFocusRef = initialFocusRef
+    }
+    return options
+  }, [ready, blocking, initialFocusRef])
+  
+  const focusTrapRef = useFocusTrap(focusTrapOptions)
 
-  const { minSnap, maxSnap, maxHeight, findSnap } = useSnapPoints({
-    contentRef: contentRef as React.RefObject<Element>,
-    controlledMaxHeight,
-    footerEnabled: !!footer,
-    footerRef: footerRef as React.RefObject<Element>,
-    getSnapPoints,
-    headerEnabled: header !== false,
-    headerRef: headerRef as React.RefObject<Element>,
-    heightRef,
-    lastSnapRef: lastSnapRef as React.RefObject<number>,
-    ready,
-    registerReady,
-    resizeSourceRef,
-  })
+  const snapPointsOptions = useMemo(() => {
+    const options: Parameters<typeof useSnapPoints>[0] = {
+      contentRef: contentRef as React.RefObject<Element>,
+      footerEnabled: !!footer,
+      footerRef: footerRef as React.RefObject<Element>,
+      getSnapPoints,
+      headerEnabled: header !== false,
+      headerRef: headerRef as React.RefObject<Element>,
+      heightRef,
+      lastSnapRef: lastSnapRef as React.RefObject<number>,
+      ready,
+      registerReady,
+      resizeSourceRef,
+    }
+    if (controlledMaxHeight !== undefined) {
+      options.controlledMaxHeight = controlledMaxHeight
+    }
+    return options
+  }, [footer, getSnapPoints, header, ready, registerReady, lastSnapRef, controlledMaxHeight])
+  const { minSnap, maxSnap, maxHeight, findSnap } = useSnapPoints(snapPointsOptions)
 
   // Setup refs that are used in cases where full control is needed over when a side effect is executed
   const maxHeightRef = useRef(maxHeight)
@@ -209,11 +234,13 @@ export const BottomSheet = forwardRef<
         []
       ),
       onSnapCancel: useCallback(
-        ({ context }) =>
+        (params: any) => {
+          const { context } = params
           onSpringCancelRef.current?.({
             type: 'SNAP',
             source: context.snapSource,
-          }),
+          })
+        },
         []
       ),
       onCloseCancel: useCallback(
@@ -233,11 +260,13 @@ export const BottomSheet = forwardRef<
         []
       ),
       onSnapEnd: useCallback(
-        ({ context }, _event) =>
+        (params: any, _event: unknown) => {
+          const { context } = params
           onSpringEndRef.current?.({
             type: 'SNAP',
             source: context.snapSource,
-          }),
+          })
+        },
         []
       ),
       onResizeEnd: useCallback(
@@ -457,26 +486,27 @@ export const BottomSheet = forwardRef<
     const elem = scrollRef.current
     if (!elem) return
 
-    const preventScrolling = e => {
+    const preventScrolling = (e: Event): boolean => {
       if (containerRef.current) {
         const disableExpandListNodes = disableExpandList.map(selector => containerRef.current!.querySelector(selector)).filter(Boolean);
-        if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode && disableNode.contains(e.target))) {
+        if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode && disableNode.contains(e.target as Node))) {
           return true
         }
       }
       if (preventScrollingRef.current && elem.scrollTop <= 0) {
         e.preventDefault()
       }
+      return false
     }
 
     let prevValue = 0;
-    const preventSafariOverscrollOnStart = _e => {
+    const preventSafariOverscrollOnStart = (_e: Event) => {
       if (elem.scrollTop < 0) {
         prevValue = elem.scrollTop;
       }
     }
   
-    const preventSafariOverscrollOnMove = (e) => {
+    const preventSafariOverscrollOnMove = (e: Event) => {
       if (elem.scrollTop < 0 && elem.scrollTop < prevValue) {
         e.preventDefault();
       }
@@ -500,7 +530,7 @@ export const BottomSheet = forwardRef<
     }
   }, [expandOnContentDrag, scrollRef, disableExpandList])
 
-  const handleDrag = ({
+  const handleDrag = useCallback(({
     args: [{ closeOnTap = false, isContentDragging = false } = {}] = [],
     cancel,
     direction: [, direction],
@@ -512,6 +542,18 @@ export const BottomSheet = forwardRef<
     tap,
     velocity,
     event,
+  }: {
+    args: Array<{ closeOnTap?: boolean; isContentDragging?: boolean }>
+    cancel: () => void
+    direction: [number, number]
+    down: boolean
+    first: boolean
+    last: boolean
+    memo?: number
+    movement: [number, number]
+    tap: boolean
+    velocity: number
+    event: Event
   }) => {
     // Ensure all values are finite numbers to prevent NaN calculations
     const my = Number.isFinite(_my) ? _my * -1 : 0
@@ -526,7 +568,7 @@ export const BottomSheet = forwardRef<
     const hasScroll = scrollRef.current.scrollHeight > scrollRef.current.clientHeight;
     if (containerRef.current && disableExpandList.length) {
       const disableExpandListNodes = disableExpandList.map(selector => containerRef.current!.querySelector(selector)).filter(Boolean);
-      if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode && disableNode.contains(event.target))) {
+      if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode && disableNode.contains(event.target as Node))) {
         cancel()
         return memo
       }
@@ -547,7 +589,7 @@ export const BottomSheet = forwardRef<
       }
       
       timeoutRef.current = setTimeout(() => {
-        onDismiss()
+        handleDismiss('backdrop')
         timeoutRef.current = null
       }, 10)
       return memo
@@ -573,7 +615,7 @@ export const BottomSheet = forwardRef<
       && (!hasScroll || scrollRef.current.scrollTop <= 0)
     ) {
       cancel()
-      onDismiss()
+      handleDismiss('dragging')
       return memo
     }
 
@@ -632,12 +674,6 @@ export const BottomSheet = forwardRef<
     }
 
     if (last) {
-      console.log('🎬 DRAG END - sending SNAP event with:', {
-        y: newY,
-        velocity: safeVelocity > 0.05 ? safeVelocity : 1,
-        source: 'dragging',
-      });
-
       send({
         type: 'SNAP',
         payload: {
@@ -663,9 +699,17 @@ export const BottomSheet = forwardRef<
     })
 
     return memo
-  }
+  }, [
+    prefersReducedMotion,
+    expandOnContentDrag,
+    disableExpandList,
+    preventPullUp,
+    handleDismiss,
+    spring.y,
+    set,
+  ])
 
-  const bind = useDrag(handleDrag, {
+  const bind = useDrag(handleDrag as any, {
     filterTaps: true,
   })
 
@@ -678,38 +722,37 @@ export const BottomSheet = forwardRef<
 
   const interpolations = useSpringInterpolations({ spring })
 
+  const containerStyle = useMemo(() => ({
+    // spread in the interpolations
+    ...interpolations,
+    // but allow overriding them/disabling them
+    ...style,
+    // Not overridable as the "focus lock with opacity 0" trick rely on it
+    opacity: spring.ready,
+  }), [interpolations, style, spring.ready])
+
+  const backdropBindProps = useMemo(() => bind({ closeOnTap: true }), [bind])
+  const contentBindProps = useMemo(() => 
+    expandOnContentDrag ? bind({ isContentDragging: true }) : {}, 
+    [expandOnContentDrag, bind]
+  )
+
   return (
-    <animated.div
-      {...({
-        ...props,
-        'data-rsbs-root': true,
-        'data-rsbs-state': publicStates.find(state => current.matches(state)),
-        'data-rsbs-is-blocking': blocking,
-        'data-rsbs-is-dismissable': !!onDismiss,
-        'data-rsbs-has-header': !!header,
-        'data-rsbs-has-footer': !!footer,
-        className: className,
-        ref: containerRef,
-        style: {
-          // spread in the interpolations yeees
-          ...interpolations,
-          // but allow overriding them/disabling them
-          ...style,
-          // Not overridable as the "focus lock with opacity 0" trick rely on it
-          // @TODO the line below only fails on TS <4
-          // @ts-ignore
-          opacity: spring.ready,
-        }
-      } as any)}
+    <SheetContainer
+      {...(props as any)}
+      data-rsbs-root={true}
+      data-rsbs-state={publicStates.find(state => current.matches(state)) || ''}
+      className={className}
+      style={containerStyle}
+      ref={containerRef}
     >
       {sibling}
       {blocking && (
-        <div
-          // This component needs to be placed outside bottom-sheet, as bottom-sheet uses transform and thus creates a new context
-          // that clips this element to the container, not allowing it to cover the full page.
+        <Backdrop
           key="backdrop"
-          data-rsbs-backdrop
-          {...bind({ closeOnTap: true })}
+          data-rsbs-backdrop={true}
+          style={{}}
+          onPointerDown={backdropBindProps.onPointerDown}
         />
       )}
       <div
@@ -723,27 +766,27 @@ export const BottomSheet = forwardRef<
           if (event.key === 'Escape') {
             // Always stop propagation, to avoid weirdness for bottom sheets inside other bottom sheets
             event.stopPropagation()
-            if (onDismiss) onDismiss()
+            if (onDismiss) handleDismiss('escape')
           }
         }}
       >
         {header !== false && (
-          <div key="header" data-rsbs-header ref={headerRef} {...bind()}>
+          <HeaderWrapper headerRef={headerRef} bind={bind}>
             {header}
-          </div>
+          </HeaderWrapper>
         )}
-        <div key="scroll" data-rsbs-scroll ref={scrollRef} {...(expandOnContentDrag ? bind({ isContentDragging: true }) : {})}>
-          <div data-rsbs-content ref={contentRef}>
+        <div key="scroll" data-rsbs-scroll ref={scrollRef} {...contentBindProps}>
+          <ContentWrapper contentRef={contentRef}>
             {children}
-          </div>
+          </ContentWrapper>
         </div>
         {footer && (
-          <div key="footer" ref={footerRef} data-rsbs-footer {...bind()}>
+          <FooterWrapper footerRef={footerRef}>
             {footer}
-          </div>
+          </FooterWrapper>
         )}
       </div>
-    </animated.div>
+    </SheetContainer>
   )
 })
 

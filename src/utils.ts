@@ -13,13 +13,13 @@ export function clamp(number: number, lower: number, upper: number) {
 }
 
 // Mwahaha easiest way to filter out NaN I ever saw! >:3
-export function deleteNaN(arr) {
+export function deleteNaN(arr: number[]): number[] {
   const set = new Set(arr)
   set.delete(NaN)
   return [...set]
 }
 
-export function roundAndCheckForNaN(unrounded) {
+export function roundAndCheckForNaN(unrounded: number): number {
   const rounded = Math.round(unrounded)
   if (Number.isNaN(unrounded)) {
     throw new TypeError(
@@ -31,7 +31,7 @@ export function roundAndCheckForNaN(unrounded) {
 }
 
 // Validate, sanitize, round and dedupe snap points, as well as extracting the minSnap and maxSnap points
-export function processSnapPoints(unsafeSnaps: number | number[], maxHeight) {
+export function processSnapPoints(unsafeSnaps: number | number[], maxHeight: number) {
   const safeSnaps = (Array.isArray(unsafeSnaps) ? unsafeSnaps : [unsafeSnaps]).map(roundAndCheckForNaN)
 
   const snapPointsDedupedSet = safeSnaps.reduce((acc, snapPoint) => {

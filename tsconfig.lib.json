@@ -1,5 +1,5 @@
 {
-  "extends": "./tsconfig.lib.json",
+  "extends": "./tsconfig.json",
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
@@ -9,16 +9,26 @@
     "esModuleInterop": true,
     "jsx": "react-jsx",
     "skipLibCheck": true,
-    "strict": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "dist",
+    "emitDeclarationOnly": false,
     "noEmit": false,
-    "declaration": false,
-    "sourceMap": false
+    "sourceMap": true,
+    "removeComments": true,
+    "incremental": false,
+    "composite": false
   },
   "include": ["src/**/*"],
   "exclude": [
+    "node_modules",
+    "dist",
+    "coverage", 
     "**/*.test.ts",
     "**/*.test.tsx",
-    "**/*.stories.ts", 
-    "**/*.stories.tsx"
+    "**/*.stories.ts",
+    "**/*.stories.tsx",
+    "pages/**/*",
+    "docs/**/*"
   ]
 }
