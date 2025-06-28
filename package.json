@@ -3,8 +3,8 @@
   "description": "✨ Accessible, 🪄 Delightful, and 🤯 Performant. Built on react-spring for the web, and @use-gesture/react.",
   "license": "MIT",
   "type": "module",
-  "author": "Cody Olsen",
-  "homepage": "https://react-spring-bottom-sheet.cocody.dev",
+  "author": "wh1teee",
+  "homepage": "https://github.com/wh1teee/react-spring-bottom-sheet-updated",
   "repository": "wh1teee/react-spring-bottom-sheet-updated",
   "bugs": {
     "url": "https://github.com/wh1teee/react-spring-bottom-sheet-updated/issues"
@@ -24,6 +24,7 @@
     "build:microbundle": "NODE_ENV=production microbundle --define process.env.NODE_ENV=production --tsconfig tsconfig.microbundle.json -f cjs,es,modern --css-modules false --external react --globals react=React --jsx React.createElement --jsxFragment React.Fragment --no-sourcemap",
     "build:postcss": "postcss -d dist src/style.css",
     "dev": "next dev",
+    "turbo": "next dev --turbopack",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "type-check": "tsc --noEmit",
@@ -131,8 +132,8 @@
     "package.json": "prettier-package-json --write"
   },
   "meta": {
-    "twitter:site": "@stipsan",
-    "twitter:image:src": "https://react-spring-bottom-sheet.cocody.dev/somecard.png"
+    "twitter:site": "@wh1teee",
+    "twitter:image:src": "https://github.com/wh1teee/react-spring-bottom-sheet-updated/blob/main/public/somecard.png"
   },
   "prettier": {
     "semi": false,

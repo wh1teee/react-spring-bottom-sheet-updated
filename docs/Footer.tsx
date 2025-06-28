@@ -40,7 +40,7 @@ export default function Footer({
           'absolute top-0 right-0 bottom-0 bg-gray-900 w-screen'
         )}
       />
-      <Badge name="react-spring-bottom-sheet" version={version} />
+      <Badge name="react-spring-bottom-sheet-updated" version={version} />
       <Badge name="react-spring" version={reactSpringVersion} />
       <Badge name="@use-gesture/react" version={reactUseGestureVersion} />
     </footer>

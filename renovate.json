@@ -1,5 +1,5 @@
 {
-  "extends": ["github>stipsan/renovate-presets:auto"],
+  "extends": ["config:base"],
   "packageRules": [
     {
       "depTypeList": ["dependencies", "peerDependencies"],
