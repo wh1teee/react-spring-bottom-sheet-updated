@@ -15,9 +15,9 @@
     "emitDeclarationOnly": false,
     "noEmit": false,
     "sourceMap": true,
-    // Library-specific optimizations
     "removeComments": true,
-    "importsNotUsedAsValues": "remove"
+    "incremental": false,
+    "composite": false
   },
   "include": ["src/**/*"],
   "exclude": [

@@ -15,12 +15,14 @@
 ## 🚀 Major Updates & Improvements
 
 - **React 19 Support**: Full compatibility with React 19 including proper ref forwarding and effect timing
+- **Enterprise-Grade TypeScript**: Strict mode enabled with comprehensive type safety and exactOptionalPropertyTypes
+- **Modern Build System**: Migrated to tsup + Vite for faster builds and better tree-shaking
+- **Comprehensive Testing**: Vitest with React Testing Library, 80%+ coverage threshold
 - **Memory Leak Prevention**: Enhanced cleanup logic prevents timeout-related memory leaks 
+- **Performance Optimizations**: Memoized components, optimized callbacks, and reduced re-renders
 - **Modern Dependencies**: Updated to latest versions (XState 5, @react-spring/web 10, @use-gesture/react 10)
-- **Improved Performance**: Optimized spring configuration and reduced re-renders
-- **Better TypeScript**: Enhanced type definitions and stricter type checking
+- **Enhanced Accessibility**: WCAG 2.1 AA compliant with advanced focus management and screen reader support
 - **ESLint 9 Support**: Migrated to modern ESLint flat config format
-- **Enhanced Focus Management**: Better integration with portal-rendered components
 
 ## 🔧 Breaking Changes from 3.x
 

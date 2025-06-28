@@ -5,38 +5,78 @@
   "type": "module",
   "author": "wh1teee",
   "homepage": "https://github.com/wh1teee/react-spring-bottom-sheet-updated",
-  "repository": "wh1teee/react-spring-bottom-sheet-updated",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wh1teee/react-spring-bottom-sheet-updated.git"
+  },
   "bugs": {
     "url": "https://github.com/wh1teee/react-spring-bottom-sheet-updated/issues"
   },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/wh1teee"
+  },
   "version": "4.0.0-beta.4",
-  "main": "dist/index.js",
-  "module": "dist/index.es.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    },
+    "./style.css": {
+      "import": "./dist/style.css",
+      "require": "./dist/style.css",
+      "default": "./dist/style.css"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "defaults.json",
-    "dist"
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
   ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "build": "next build",
-    "build:declarations": "tsc --project tsconfig.declarations.json",
-    "prebuild:dist": "rimraf dist/**",
-    "build:dist": "npm run build:postcss && npm run build:microbundle && npm run build:declarations",
-    "build:microbundle": "NODE_ENV=production microbundle --define process.env.NODE_ENV=production --tsconfig tsconfig.microbundle.json -f cjs,es,modern --css-modules false --external react --globals react=React --jsx React.createElement --jsxFragment React.Fragment --no-sourcemap",
-    "build:postcss": "postcss -d dist src/style.css",
+    "build:lib": "tsup",
+    "build:lib:watch": "tsup --watch",
+    "build:css": "postcss -d dist src/style.css",
+    "prebuild:lib": "rimraf dist/**",
+    "build:dist": "pnpm run prebuild:lib && pnpm run build:lib && pnpm run build:css",
     "dev": "next dev",
+    "dev:vite": "vite",
+    "dev:lib": "pnpm run build:lib:watch",
     "turbo": "next dev --turbopack",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "type-check": "tsc --noEmit",
-    "prebuild": "npm run lint && npm run type-check",
-    "prepublishOnly": "npm run build:dist",
+    "type-check:lib": "tsc --project tsconfig.lib.json --noEmit",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "prebuild": "pnpm run lint && pnpm run type-check",
+    "prepublishOnly": "pnpm run build:dist && pnpm run test:run",
+    "postpublish": "echo 'Package published successfully!'",
     "start": "next start",
-    "test": "npm run prepublishOnly && npm run build"
+    "analyze": "pnpm run build:lib && npx webpack-bundle-analyzer dist/index.js",
+    "clean": "rimraf dist dist-demo coverage .next"
   },
   "sideEffects": [
     "*.css"
   ],
-  "types": "dist/index.d.ts",
   "dependencies": {
     "@radix-ui/react-portal": "^1.1.9",
     "@react-spring/web": "^10.0.1",
@@ -50,6 +90,7 @@
     "react": "^16.14.0 || 17 || 18 || 19"
   },
   "devDependencies": {
+    "@axe-core/react": "^4.10.2",
     "@babel/core": "^7.27.4",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.29.0",
@@ -57,11 +98,18 @@
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@tailwindcss/forms": "^0.5.10",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
     "@types/node": "^22.15.32",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@use-it/interval": "^1.0.0",
+    "@vitest/coverage-v8": "^2.1.8",
+    "@vitest/ui": "^2.1.8",
+    "@vitejs/plugin-react-swc": "^3.10.1",
     "@xstate/inspect": "^0.8.0",
+    "webpack-bundle-analyzer": "^4.10.2",
     "classnames": "^2.5.1",
     "eslint": "^9.29.0",
     "eslint-config-next": "^15.3.3",
@@ -73,8 +121,8 @@
     "eslint-plugin-unused-imports": "^4.1.4",
     "globals": "^16.2.0",
     "husky": "^8.0.3",
+    "jsdom": "^25.0.1",
     "lint-staged": "^13.3.0",
-    "microbundle": "^0.15.1",
     "next": "^15.3.3",
     "postcss": "^8.5.6",
     "postcss-cli": "^11.0.1",
@@ -89,8 +137,11 @@
     "semantic-release": "^21.1.2",
     "smooth-scroll-into-view-if-needed": "^2.0.2",
     "tailwindcss": "^3.4.17",
+    "tsup": "^8.3.5",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.34.1"
+    "typescript-eslint": "^8.34.1",
+    "vite": "^6.0.5",
+    "vitest": "^2.1.8"
   },
   "keywords": [
     "animation",
@@ -125,7 +176,6 @@
       "pre-commit": "lint-staged"
     }
   },
-  "jsnext:main": "dist/index.es.js",
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --fix",
     "*.{js,jsx,ts,tsx,md,html,css,yml,json}": "prettier --write",
