@@ -187,7 +187,7 @@ export type Props = {
    * Handler that is called to get the height values that the bottom sheet can *snap* to when the user stops dragging.
    * @default ({ minHeight }) => minHeight
    */
-  snapPoints?: snapPoints
+  snapPoints?: SnapPointsFunction
 
   /**
    * Handler that is called to get the initial height of the bottom sheet when it's opened (or when the viewport is resized).

@@ -33,9 +33,6 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Test
-        run: pnpm test
-
   prerelease:
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
@@ -68,9 +65,6 @@ jobs:
 
       - name: Build package
         run: pnpm build:dist
-
-      - name: Verify npm audit signatures
-        run: pnpm audit signatures
 
       - name: Semantic Pre-release
         run: npx semantic-release

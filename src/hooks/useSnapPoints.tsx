@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import type { defaultSnapProps, ResizeSource, snapPoints } from '../types'
+import type { defaultSnapProps, ResizeSource, SnapPointsFunction } from '../types'
 import { processSnapPoints, roundAndCheckForNaN } from '../utils'
 import type { useReady } from './useReady'
 import { useLayoutEffect } from './useLayoutEffect'
