@@ -32,7 +32,7 @@ export function useSnapPoints({
   controlledMaxHeight?: number
   footerEnabled: boolean
   footerRef: React.RefObject<Element>
-  getSnapPoints: snapPoints
+  getSnapPoints: SnapPointsFunction
   headerEnabled: boolean
   headerRef: React.RefObject<Element>
   heightRef: React.RefObject<number>
