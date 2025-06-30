@@ -21,7 +21,7 @@ export type SnapPointProps = {
   maxHeight: number
 }
 
-export type snapPoints = (props: SnapPointProps) => number[] | number
+export type SnapPointsFunction = (props: SnapPointProps) => number[] | number
 
 /**
  * `window` comes from window.onresize, maxheightprop is if the `maxHeight` prop is used, and `element` comes from the resize observers that listens to header, footer and the content area
