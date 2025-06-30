@@ -1,3 +1,21 @@
+# [4.0.0-beta.5](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.4...v4.0.0-beta.5) (2025-06-30)
+
+
+### Bug Fixes
+
+* resolve remaining TypeScript error and streamline CI ([6024f3e](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/6024f3e2d37114f7e06186dfdcfc7a0a84167001))
+* resolve TypeScript errors and simplify CI pipeline ([8a8645e](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/8a8645e7f8e14eb2ae0d2b186fcadf011b38079c))
+
+
+### Features
+
+* modernize release pipeline with comprehensive semantic-release config ([1ff9ac4](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/1ff9ac4bcd567d99740c547a84c15a47ee2e001c))
+
+
+### BREAKING CHANGES
+
+* Release configuration now requires all standard semantic-release plugins
+
 # [4.0.0-beta.4](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.3...v4.0.0-beta.4) (2025-06-20)
 
 
