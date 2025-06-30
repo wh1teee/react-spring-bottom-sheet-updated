@@ -538,6 +538,7 @@ function MyComponent() {
       <Drawer 
         open={drawerOpen}
         disableEnforceFocus={sheetOpen} // Disable when bottom sheet is open
+        disableScrollLock={!sheetOpen} // CRITICAL: Disable when bottom sheet is closed
       >
         {/* Drawer content */}
       </Drawer>
@@ -552,6 +553,8 @@ function MyComponent() {
   )
 }
 ```
+
+**⚠️ IMPORTANT**: When using `disableEnforceFocus={sheetOpen}`, you MUST also add `disableScrollLock={!sheetOpen}` to prevent scroll lock conflicts. Without this, if the MUI component closes first, there will be a conflict over who manages body scroll locking, leaving the page "frozen" with `overflow: hidden` until a page refresh.
 
 ### Portal-Rendered Components Inside Bottom Sheet
 
