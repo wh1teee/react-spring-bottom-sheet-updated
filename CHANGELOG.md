@@ -3,6 +3,19 @@
 
 ### Bug Fixes
 
+* trigger beta release after tag cleanup ([99d0671](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/99d06710cf08474164c0ddcc960153fa4e450154))
+* trigger new beta release ([c619dd5](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/c619dd52b5a6bfb4188148aea9687683d40656e9))
+
+
+### Features
+
+* add manual trigger to prerelease workflow ([632aa91](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/632aa91451a17ed6f544d2d1e931ffffef7424d5))
+
+# [4.0.0-beta.7](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.6...v4.0.0-beta.7) (2025-07-01)
+
+
+### Bug Fixes
+
 * trigger new beta release ([c619dd5](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/c619dd52b5a6bfb4188148aea9687683d40656e9))
 
 
