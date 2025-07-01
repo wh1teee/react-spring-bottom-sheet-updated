@@ -36,6 +36,8 @@ class ProblematicScrollLock {
   }
 
   // OLD BEHAVIOR: Only saves inline styles, not computed styles
+  // The key issue: if MUI already set overflow:hidden as inline style,
+  // we save that and later restore it, causing the freeze
   private saveOriginalStyles(): void {
     const { body } = document
     this.originalStyles = {
@@ -46,12 +48,22 @@ class ProblematicScrollLock {
       width: body.style.width,
       scrollBehavior: document.documentElement.style.scrollBehavior,
     }
+    console.log('🔴 Problematic: Saved styles:', {
+      inline: this.originalStyles.overflow || '(empty)',
+      computed: window.getComputedStyle(body).overflow,
+      problem: this.originalStyles.overflow === 'hidden' ? 'YES - will cause freeze!' : 'no'
+    })
   }
 
   // OLD BEHAVIOR: Blindly restores whatever was saved
   private restoreOriginalStyles(): void {
     const { body } = document
     const { documentElement } = document
+    
+    console.log('🔴 Problematic: Restoring styles:', {
+      restoring: this.originalStyles.overflow || '(empty)',
+      currentComputed: window.getComputedStyle(body).overflow
+    })
     
     body.style.overflow = this.originalStyles.overflow
     body.style.paddingRight = this.originalStyles.paddingRight
@@ -60,6 +72,11 @@ class ProblematicScrollLock {
     body.style.top = this.originalStyles.top || ''
     body.style.width = this.originalStyles.width || ''
     documentElement.style.scrollBehavior = this.originalStyles.scrollBehavior || ''
+    
+    console.log('🔴 Problematic: After restore:', {
+      inline: body.style.overflow || '(empty)',
+      computed: window.getComputedStyle(body).overflow
+    })
   }
 
   lock(): void {
@@ -114,9 +131,7 @@ export function useProblematicScrollLock({
   enabled: boolean
 }) {
   const ref = useRef<{ activate: () => void; deactivate: () => void }>({
-    activate: () => {
-      throw new TypeError('Tried to activate scroll lock too early')
-    },
+    activate: () => {},
     deactivate: () => {},
   })
 
@@ -125,27 +140,30 @@ export function useProblematicScrollLock({
   useDebugValue(enabled ? 'Enabled (Problematic)' : 'Disabled')
 
   const activate = useCallback(() => {
+    if (!enabled) return
+    console.log('🔴 Problematic: Activating scroll lock, saving current styles:', {
+      overflow: document.body.style.overflow || '(empty)',
+      computed: window.getComputedStyle(document.body).overflow
+    })
     if (scrollLock.isScrollLocked()) return
     scrollLock.lock()
-  }, [scrollLock])
+  }, [scrollLock, enabled])
 
   const deactivate = useCallback(() => {
+    if (!enabled) return
+    console.log('🔴 Problematic: Deactivating scroll lock, restoring saved styles')
     if (!scrollLock.isScrollLocked()) return
     scrollLock.unlock()
-  }, [scrollLock])
+  }, [scrollLock, enabled])
 
+  // Don't automatically activate/deactivate based on enabled state
+  // Let the parent component control when to activate/deactivate
   useEffect(() => {
-    if (!enabled) {
-      ref.current.deactivate()
-      ref.current = { activate: () => {}, deactivate: () => {} }
-      return
-    }
-
     ref.current = {
       activate,
       deactivate,
     }
-  }, [enabled, activate, deactivate])
+  }, [activate, deactivate])
 
   return ref
 }

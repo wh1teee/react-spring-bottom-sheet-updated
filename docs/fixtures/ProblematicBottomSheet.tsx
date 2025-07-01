@@ -1,4 +1,4 @@
-import { forwardRef } from 'react'
+import { forwardRef, useEffect } from 'react'
 import { BottomSheet as OriginalBottomSheet, BottomSheetProps, BottomSheetRef } from '../../src'
 import { useProblematicScrollLock } from './useProblematicScrollLock'
 
@@ -8,20 +8,24 @@ export const ProblematicBottomSheet = forwardRef<
   BottomSheetProps & { useProblematic?: boolean }
 >(({ useProblematic = false, ...props }, ref) => {
   const problematicScrollLockRef = useProblematicScrollLock({
-    enabled: useProblematic && !!props.open,
+    enabled: useProblematic,
   })
 
-  // If problematic mode is enabled, we'll use our problematic scroll lock
-  // and disable the built-in one
-  if (useProblematic) {
-    // Activate/deactivate problematic scroll lock based on open state
-    if (props.open) {
-      problematicScrollLockRef.current?.activate()
-    } else {
-      problematicScrollLockRef.current?.deactivate()
+  // Use effect to handle open/close state changes
+  useEffect(() => {
+    if (useProblematic) {
+      if (props.open) {
+        // When opening: save current styles (which might be 'hidden' from MUI)
+        problematicScrollLockRef.current?.activate()
+      } else {
+        // When closing: restore saved styles (problematic restoration)
+        problematicScrollLockRef.current?.deactivate()
+      }
     }
+  }, [props.open, useProblematic, problematicScrollLockRef])
 
-    // Pass through props but disable the built-in scroll locking
+  // If problematic mode is enabled, disable the built-in scroll locking
+  if (useProblematic) {
     return (
       <OriginalBottomSheet
         {...props}
@@ -31,6 +35,6 @@ export const ProblematicBottomSheet = forwardRef<
     )
   }
 
-  // Use normal behavior
+  // Use normal behavior with built-in scroll lock handling
   return <OriginalBottomSheet {...props} ref={ref} />
 })

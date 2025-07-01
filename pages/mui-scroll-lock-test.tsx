@@ -114,13 +114,17 @@ export default function MUIScrollLockTest() {
         </Typography>
 
         <Alert severity="info" sx={{ mb: 3 }}>
-          <AlertTitle>Test Instructions</AlertTitle>
+          <AlertTitle>Test Instructions - Reproduce Scroll Lock Conflict</AlertTitle>
           <Typography variant="body2">
-            1. Toggle "Problematic Behavior" to test old vs new scroll lock handling<br/>
-            2. Open the drawer (menu button)<br/>
-            3. Open the bottom sheet<br/>
-            4. Close the drawer first, then the bottom sheet<br/>
-            5. Check if page scroll is working properly
+            <strong>To reproduce the problematic behavior:</strong><br/>
+            1. Enable "Problematic Behavior" toggle<br/>
+            2. Open the Drawer (menu button) - MUI sets overflow:hidden<br/>
+            3. Open the Bottom Sheet - saves MUI's overflow:hidden as "original"<br/>
+            4. Close the Drawer first - MUI removes its styles<br/>
+            5. Close the Bottom Sheet - restores the saved overflow:hidden ❌<br/>
+            6. Page should be frozen (can't scroll) in problematic mode<br/>
+            <br/>
+            <strong>With the fix disabled:</strong> Same steps but page scroll works correctly ✅
           </Typography>
         </Alert>
 
@@ -145,26 +149,59 @@ export default function MUIScrollLockTest() {
             onClick={() => setDrawerOpen(true)}
             startIcon={<MenuIcon />}
           >
-            Open Drawer
+            1. Open Drawer
           </Button>
           <Button
             variant="contained"
             color="secondary"
             onClick={() => setSheetOpen(true)}
+            disabled={!drawerOpen}
           >
-            Open Bottom Sheet
+            2. Open Bottom Sheet
           </Button>
           <Button
             variant="outlined"
-            onClick={() => setDialogOpen(true)}
+            onClick={() => setDrawerOpen(false)}
+            disabled={!drawerOpen || !sheetOpen}
           >
-            Open Dialog
+            3. Close Drawer
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={() => setSheetOpen(false)}
+            disabled={!sheetOpen || drawerOpen}
+          >
+            4. Close Bottom Sheet
+          </Button>
+        </Box>
+        
+        <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+          <Button
+            variant="outlined"
+            onClick={() => setDialogOpen(true)}
+            size="small"
+          >
+            Test Dialog
           </Button>
           <Button
             variant="outlined"
             onClick={() => setModalOpen(true)}
+            size="small"
           >
-            Open Modal
+            Test Modal
+          </Button>
+          <Button
+            variant="text"
+            onClick={() => {
+              setDrawerOpen(false)
+              setSheetOpen(false)
+              setDialogOpen(false)
+              setModalOpen(false)
+            }}
+            size="small"
+          >
+            Reset All
           </Button>
         </Box>
 
