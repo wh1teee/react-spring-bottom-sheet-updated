@@ -136,13 +136,14 @@ class ModernScrollLock {
     
     otherProperties.forEach(prop => {
       if (!this.externalTracker.externallyModified.has(prop)) {
-        const originalValue = this.externalTracker.originalStyles![prop]
+        const originalInlineValue = this.originalStyles[prop]
         
-        // If original value was from computed styles (not inline), remove the inline property
-        if (this.originalStyles[prop] === '') {
+        // If we didn't have an inline style originally, remove the property entirely
+        if (originalInlineValue === '') {
           body.style.removeProperty(prop === 'paddingRight' ? 'padding-right' : prop)
         } else {
           // Restore the original inline value with type safety
+          const originalValue = this.externalTracker.originalStyles![prop]
           if (prop === 'paddingRight') {
             body.style.paddingRight = originalValue
           } else if (prop === 'position') {
@@ -153,6 +154,9 @@ class ModernScrollLock {
             body.style.width = originalValue
           }
         }
+      } else {
+        // If externally modified, remove our inline styles to let external changes take effect
+        body.style.removeProperty(prop === 'paddingRight' ? 'padding-right' : prop)
       }
     })
     
