@@ -33,16 +33,20 @@ interface OriginalStyles {
   scrollBehavior?: string
 }
 
-// Track external style changes
+// Track external style changes for properties we modify
 interface ExternalStyleTracker {
   observer: MutationObserver | null
-  originalComputedStyles: {
+  originalStyles: {
     overflow: string
     paddingRight: string
     position: string
     top: string
     width: string
   } | null
+  // Track which properties were changed by external libraries while we were active
+  externallyModified: Set<string>
+  // Track our own applied values to distinguish from external changes
+  appliedByUs: Map<string, string>
 }
 
 class ModernScrollLock {
@@ -60,7 +64,9 @@ class ModernScrollLock {
   private touchMoveHandler: ((e: TouchEvent) => void) | null = null
   private externalTracker: ExternalStyleTracker = {
     observer: null,
-    originalComputedStyles: null,
+    originalStyles: null,
+    externallyModified: new Set(),
+    appliedByUs: new Map(),
   }
 
   static getInstance(): ModernScrollLock {
@@ -79,7 +85,17 @@ class ModernScrollLock {
     const { body } = document
     const computedStyles = window.getComputedStyle(body)
     
-    // Save inline styles (for our own changes)
+    // Save the current state of ALL properties we're about to modify
+    // This includes both inline and computed values
+    this.externalTracker.originalStyles = {
+      overflow: body.style.overflow || computedStyles.overflow,
+      paddingRight: body.style.paddingRight || computedStyles.paddingRight,
+      position: body.style.position || computedStyles.position,
+      top: body.style.top || computedStyles.top,
+      width: body.style.width || computedStyles.width,
+    }
+    
+    // Also save inline styles for our own restoration logic
     this.originalStyles = {
       overflow: body.style.overflow,
       paddingRight: body.style.paddingRight,
@@ -89,63 +105,109 @@ class ModernScrollLock {
       scrollBehavior: document.documentElement.style.scrollBehavior,
     }
     
-    // Save computed styles (the actual applied styles before our changes)
-    this.externalTracker.originalComputedStyles = {
-      overflow: computedStyles.overflow,
-      paddingRight: computedStyles.paddingRight,
-      position: computedStyles.position,
-      top: computedStyles.top,
-      width: computedStyles.width,
-    }
+    // Reset tracking
+    this.externalTracker.externallyModified.clear()
+    this.externalTracker.appliedByUs.clear()
   }
 
   private restoreOriginalStyles(): void {
     const { body } = document
     const { documentElement } = document
     
-    // Check if external libraries changed styles while we were locked
-    const currentComputedStyles = window.getComputedStyle(body)
-    const shouldRestoreComputed = this.externalTracker.originalComputedStyles &&
-      currentComputedStyles.overflow !== this.externalTracker.originalComputedStyles.overflow
+    if (!this.externalTracker.originalStyles) return
     
-    // Remove our inline styles first
-    body.style.overflow = this.originalStyles.overflow
-    body.style.paddingRight = this.originalStyles.paddingRight
-    
-    if (isIOS) {
-      body.style.position = this.originalStyles.position || ''
-      body.style.top = this.originalStyles.top || ''
-      body.style.width = this.originalStyles.width || ''
-      documentElement.style.scrollBehavior = this.originalStyles.scrollBehavior || ''
+    // Special handling for overflow - if external library removed it, don't restore to hidden
+    if (this.externalTracker.externallyModified.has('overflow')) {
+      // External library wanted to remove overflow, so we remove our inline style
+      // allowing their intention to take effect
+      body.style.removeProperty('overflow')
+    } else {
+      // Normal restoration for overflow
+      const originalValue = this.externalTracker.originalStyles!.overflow
+      if (this.originalStyles.overflow === '') {
+        body.style.removeProperty('overflow')
+      } else {
+        body.style.overflow = originalValue
+      }
     }
     
-    // If external library changed styles and they shouldn't be 'hidden', restore computed styles
-    if (shouldRestoreComputed && this.externalTracker.originalComputedStyles && 
-        this.externalTracker.originalComputedStyles.overflow !== 'hidden') {
-      // Only restore if computed style was not 'hidden' originally
-      if (body.style.overflow === '' || body.style.overflow === 'hidden') {
-        body.style.overflow = this.externalTracker.originalComputedStyles.overflow
+    // Handle other properties normally
+    const otherProperties = ['paddingRight', 'position', 'top', 'width'] as const
+    
+    otherProperties.forEach(prop => {
+      if (!this.externalTracker.externallyModified.has(prop)) {
+        const originalValue = this.externalTracker.originalStyles![prop]
+        
+        // If original value was from computed styles (not inline), remove the inline property
+        if (this.originalStyles[prop] === '') {
+          body.style.removeProperty(prop === 'paddingRight' ? 'padding-right' : prop)
+        } else {
+          // Restore the original inline value with type safety
+          if (prop === 'paddingRight') {
+            body.style.paddingRight = originalValue
+          } else if (prop === 'position') {
+            body.style.position = originalValue as any // position values are well-defined
+          } else if (prop === 'top') {
+            body.style.top = originalValue
+          } else if (prop === 'width') {
+            body.style.width = originalValue
+          }
+        }
       }
+    })
+    
+    // iOS-specific scroll restoration
+    if (isIOS) {
+      // Temporarily disable smooth scrolling for instant restoration
+      documentElement.style.scrollBehavior = 'auto'
+      
+      // Restore scroll position
+      window.scrollTo(0, this.scrollOffset)
+      
+      // Restore original scroll behavior after position is set
+      requestAnimationFrame(() => {
+        documentElement.style.scrollBehavior = this.originalStyles.scrollBehavior || ''
+      })
     }
   }
 
   private startTrackingExternalChanges(): void {
     if (typeof window === 'undefined' || this.externalTracker.observer) return
     
-    this.externalTracker.observer = new MutationObserver(() => {
-      // Update our snapshot of computed styles when external changes occur
-      if (this.isLocked && this.externalTracker.originalComputedStyles) {
-        const computedStyles = window.getComputedStyle(document.body)
-        // Only update if the change wasn't from us
-        if (computedStyles.overflow !== 'hidden') {
-          this.externalTracker.originalComputedStyles.overflow = computedStyles.overflow
+    this.externalTracker.observer = new MutationObserver((mutations) => {
+      if (!this.isLocked || !this.externalTracker.originalStyles) return
+      
+      mutations.forEach(mutation => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+          const { body } = document
+          
+          // If external library removed our overflow: hidden, reapply it immediately
+          // But mark that external library wanted to remove it (for proper restoration)
+          if (body.style.overflow !== 'hidden') {
+            this.externalTracker.externallyModified.add('overflow')
+            body.style.overflow = 'hidden'
+          }
+          
+          // Track changes for other properties using precise tracking
+          const currentStyles = window.getComputedStyle(body)
+          const otherProperties = ['paddingRight', 'position', 'top', 'width'] as const
+          
+          otherProperties.forEach(prop => {
+            const currentInlineValue = body.style[prop as any]
+            const appliedByUsValue = this.externalTracker.appliedByUs.get(prop)
+            
+            // If we applied a value but it's now different, external library changed it
+            if (appliedByUsValue && currentInlineValue !== appliedByUsValue) {
+              this.externalTracker.externallyModified.add(prop)
+            }
+          })
         }
-      }
+      })
     })
     
     this.externalTracker.observer.observe(document.body, {
       attributes: true,
-      attributeFilter: ['style', 'class'],
+      attributeFilter: ['style'],
       subtree: false,
     })
   }
@@ -185,12 +247,15 @@ class ModernScrollLock {
     const { documentElement } = document
     const scrollbarWidth = this.getScrollbarWidth()
 
-    // Apply base scroll lock styles
+    // Apply scroll lock styles and track what we applied
     body.style.overflow = 'hidden'
+    this.externalTracker.appliedByUs.set('overflow', 'hidden')
     
     // Compensate for scrollbar width if needed
     if (options.reserveScrollBarGap && scrollbarWidth > 0) {
-      body.style.paddingRight = `${scrollbarWidth}px`
+      const paddingValue = `${scrollbarWidth}px`
+      body.style.paddingRight = paddingValue
+      this.externalTracker.appliedByUs.set('paddingRight', paddingValue)
     }
 
     // iOS-specific handling
@@ -200,6 +265,10 @@ class ModernScrollLock {
       body.style.position = 'fixed'
       body.style.top = `-${this.scrollOffset}px`
       body.style.width = '100%'
+      
+      this.externalTracker.appliedByUs.set('position', 'fixed')
+      this.externalTracker.appliedByUs.set('top', `-${this.scrollOffset}px`)
+      this.externalTracker.appliedByUs.set('width', '100%')
     }
 
     // Add touch event handler for iOS
@@ -226,18 +295,9 @@ class ModernScrollLock {
     // Restore original styles
     this.restoreOriginalStyles()
 
-    // iOS-specific scroll restoration
-    if (isIOS) {
-      // Restore scroll position without smooth scrolling
-      window.scrollTo(0, this.scrollOffset)
-      // Restore smooth scrolling after a frame
-      requestAnimationFrame(() => {
-        document.documentElement.style.scrollBehavior = this.originalStyles.scrollBehavior || ''
-      })
-    }
-    
     // Reset tracker
-    this.externalTracker.originalComputedStyles = null
+    this.externalTracker.originalStyles = null
+    this.externalTracker.appliedByUs.clear()
   }
 
   isScrollLocked(): boolean {

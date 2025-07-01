@@ -38,6 +38,12 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.1.2",
+    "@mui/material": "^7.2.0",
+    "@mui/material-nextjs": "^7.1.1",
     "@radix-ui/react-portal": "^1.1.9",
     "@react-spring/web": "^10.0.1",
     "@use-gesture/react": "^10.3.1",
