@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { BottomSheet, BottomSheetSpringConfig } from '../../src'
+import { BottomSheet, type BottomSheetSpringConfig } from '../../src'
 import Button from '../../docs/fixtures/Button'
 
 export default function SpringConfigExample() {
@@ -122,7 +122,7 @@ export default function SpringConfigExample() {
             <div className="bg-gray-50 p-4 rounded-lg">
               <h5 className="font-medium text-gray-900 mb-2">Current Config Values:</h5>
                               <div className="grid grid-cols-2 gap-2 text-sm">
-                  {Object.entries(springConfigs[configType]!).map(([key, value]) => (
+                  {Object.entries(springConfigs[configType]).map(([key, value]) => (
                     <div key={key} className="flex justify-between">
                       <span className="text-gray-600">{key}:</span>
                       <span className="font-mono text-gray-900">{String(value)}</span>

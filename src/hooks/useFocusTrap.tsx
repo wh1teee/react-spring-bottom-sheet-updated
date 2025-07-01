@@ -18,7 +18,9 @@ export function useFocusTrap({
     activate: () => {
       throw new TypeError('Tried to activate focus trap too early')
     },
-    deactivate: () => {},
+    deactivate: () => {
+      // Initial deactivate function - will be replaced when enabled
+    },
   })
 
   useDebugValue(enabled ? 'Enabled' : 'Disabled')
@@ -26,7 +28,14 @@ export function useFocusTrap({
   useEffect(() => {
     if (!enabled) {
       ref.current.deactivate()
-      ref.current = { activate: () => {}, deactivate: () => {} }
+      ref.current = { 
+        activate: () => {
+          // Disabled focus trap - no action needed
+        }, 
+        deactivate: () => {
+          // Disabled focus trap - no action needed
+        } 
+      }
       return
     }
 
@@ -35,7 +44,7 @@ export function useFocusTrap({
       onActivate:
         process.env.NODE_ENV !== 'production'
           ? () => {
-              console.log('focus activate')
+              // Focus trap activated in development mode
             }
           : undefined,
       // If initialFocusRef is manually specified we don't want the first tabbable element to receive focus if initialFocusRef can't be found

@@ -87,7 +87,7 @@ export function useSnapPoints({
     
     // Add safety check for NaN values
     if (!Number.isFinite(unsafeSearch)) {
-      console.warn('findSnap received invalid value:', unsafeSearch, 'using minSnap instead')
+      // Invalid value received, fallback to minSnap
       return minSnap
     }
     

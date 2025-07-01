@@ -123,7 +123,7 @@ class ModernScrollLock {
       body.style.removeProperty('overflow')
     } else {
       // Normal restoration for overflow
-      const originalValue = this.externalTracker.originalStyles!.overflow
+      const originalValue = this.externalTracker.originalStyles.overflow
       if (this.originalStyles.overflow === '') {
         body.style.removeProperty('overflow')
       } else {
@@ -166,6 +166,7 @@ class ModernScrollLock {
       
       // Restore original scroll behavior after position is set
       requestAnimationFrame(() => {
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- Need to handle empty string as falsy
         documentElement.style.scrollBehavior = this.originalStyles.scrollBehavior || ''
       })
     }
@@ -189,11 +190,10 @@ class ModernScrollLock {
           }
           
           // Track changes for other properties using precise tracking
-          const currentStyles = window.getComputedStyle(body)
           const otherProperties = ['paddingRight', 'position', 'top', 'width'] as const
           
           otherProperties.forEach(prop => {
-            const currentInlineValue = body.style[prop as any]
+            const currentInlineValue = body.style[prop as keyof CSSStyleDeclaration]
             const appliedByUsValue = this.externalTracker.appliedByUs.get(prop)
             
             // If we applied a value but it's now different, external library changed it
@@ -228,7 +228,7 @@ class ModernScrollLock {
       }
 
       // Custom allowTouchMove callback
-      if (options.allowTouchMove && options.allowTouchMove(target)) {
+      if (options.allowTouchMove?.(target)) {
         return
       }
 
@@ -329,7 +329,9 @@ export function useScrollLock({
     activate: () => {
       throw new TypeError('Tried to activate scroll lock too early')
     },
-    deactivate: () => {},
+    deactivate: () => {
+      // Initial deactivate function - will be replaced when enabled
+    },
   })
 
   const scrollLock = ModernScrollLock.getInstance()
@@ -353,7 +355,14 @@ export function useScrollLock({
   useEffect(() => {
     if (!enabled) {
       ref.current.deactivate()
-      ref.current = { activate: () => {}, deactivate: () => {} }
+      ref.current = { 
+        activate: () => {
+          // Disabled scroll lock - no action needed
+        }, 
+        deactivate: () => {
+          // Disabled scroll lock - no action needed
+        } 
+      }
       return
     }
 
