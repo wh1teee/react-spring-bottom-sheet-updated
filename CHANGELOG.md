@@ -1,3 +1,10 @@
+# [4.0.0-beta.6](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.5...v4.0.0-beta.6) (2025-07-01)
+
+
+### Bug Fixes
+
+* resolve scroll lock conflicts with external libraries ([a2d8057](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/a2d80570a617336f3baab35db1071ccd826dc38e))
+
 # [4.0.0-beta.5](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.4...v4.0.0-beta.5) (2025-06-30)
 
 
