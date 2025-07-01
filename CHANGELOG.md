@@ -22,6 +22,25 @@
 
 ### Bug Fixes
 
+* critical focus trap bug with false value ([8a2792e](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/8a2792e82eb85cd83697bf405541735ff0a0cf82))
+* implement intelligent scroll lock conflict resolution ([1f5a1f7](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/1f5a1f7aa2aa041e0bdb500793a867abfcdee30b))
+* improve problematic scroll lock behavior reproduction ([22bf643](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/22bf64398c26dc90dff16f89dfe456a7a2f9cc42))
+* move controls inside modal overlays for proper accessibility ([1690895](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/1690895bd2caeb8f00ec5e137e40750966b93149))
+* remove unused [@ts-expect-error](https://github.com/ts-expect-error) directive causing build failure ([0e681a3](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/0e681a3a3d1aca091a13e6d5c54620cd3e6011d8))
+* resolve all linter errors for GitHub Actions ([0e4204e](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/0e4204e294dfa45d867d51d6b54d12528a9335a1))
+* resolve iOS animation, type safety, and heuristic detection bugs ([552572b](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/552572b1a2521ec936fb74c3bcf2d147d08a110f))
+* resolve scroll lock conflicts with external libraries ([a2d8057](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/a2d80570a617336f3baab35db1071ccd826dc38e))
+
+
+### Features
+
+* add Material UI v7.2 integration and scroll lock conflict demo ([a4dfe29](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/a4dfe293b502cdfd835039410bacfd812333a4e4))
+
+# [4.0.0-beta.6](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.5...v4.0.0-beta.6) (2025-07-01)
+
+
+### Bug Fixes
+
 * resolve scroll lock conflicts with external libraries ([a2d8057](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/a2d80570a617336f3baab35db1071ccd826dc38e))
 
 # [4.0.0-beta.5](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.4...v4.0.0-beta.5) (2025-06-30)
