@@ -145,6 +145,7 @@ export const BottomSheet = forwardRef<
   const focusTrapRef = useFocusTrap({
     targetRef: containerRef as React.RefObject<HTMLElement>,
     fallbackRef: overlayRef as React.RefObject<HTMLElement>,
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- Must convert false to undefined for focus trap
     initialFocusRef: initialFocusRef || undefined,
     enabled: ready && blocking && initialFocusRef !== false,
   })
@@ -690,7 +691,7 @@ export const BottomSheet = forwardRef<
           ...style,
           // Not overridable as the "focus lock with opacity 0" trick rely on it
           // @TODO the line below only fails on TS <4
-          // @ts-expect-error - Spring type mismatch with older TS versions
+          // Spring type compatibility for opacity property
           opacity: spring.ready,
         }
       } as any)}
