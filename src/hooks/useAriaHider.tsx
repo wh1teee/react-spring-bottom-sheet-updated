@@ -15,7 +15,9 @@ export function useAriaHider({
     activate: () => {
       throw new TypeError('Tried to activate aria hider too early')
     },
-    deactivate: () => {},
+    deactivate: () => {
+      // Initial deactivate function - will be replaced when enabled
+    },
   })
 
   useDebugValue(enabled ? 'Enabled' : 'Disabled')
@@ -23,7 +25,14 @@ export function useAriaHider({
   useEffect(() => {
     if (!enabled) {
       ref.current.deactivate()
-      ref.current = { activate: () => {}, deactivate: () => {} }
+      ref.current = { 
+        activate: () => {
+          // Disabled aria hider - no action needed
+        }, 
+        deactivate: () => {
+          // Disabled aria hider - no action needed
+        } 
+      }
       return
     }
 

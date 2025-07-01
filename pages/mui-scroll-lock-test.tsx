@@ -31,9 +31,7 @@ import {
   Home as HomeIcon,
   Settings as SettingsIcon,
   Info as InfoIcon,
-  Warning as WarningIcon,
 } from '@mui/icons-material'
-import { BottomSheet } from '../src'
 import { ProblematicBottomSheet } from '../docs/fixtures/ProblematicBottomSheet'
 
 const drawerWidth = 240

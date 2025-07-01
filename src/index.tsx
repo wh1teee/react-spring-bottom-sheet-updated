@@ -94,3 +94,5 @@ export const BottomSheet = forwardRef<RefHandles, Props>((
     </PortalRootComponent>
   )
 })
+
+BottomSheet.displayName = 'BottomSheet'

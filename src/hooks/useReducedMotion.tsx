@@ -1,6 +1,6 @@
 'use client'
 
-import { RefObject, useDebugValue, useEffect, useRef } from 'react'
+import { type RefObject, useDebugValue, useEffect, useRef } from 'react'
 
 /**
  * Hook to detect user's prefers-reduced-motion browser setting

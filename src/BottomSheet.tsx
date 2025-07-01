@@ -15,7 +15,7 @@ import React, {
   useRef,
   useMemo,
   forwardRef,
-  RefObject,
+  type RefObject,
 } from 'react'
 import { animated, config } from '@react-spring/web'
 import { rubberbandIfOutOfBounds, useDrag } from '@use-gesture/react'
@@ -145,7 +145,7 @@ export const BottomSheet = forwardRef<
   const focusTrapRef = useFocusTrap({
     targetRef: containerRef as React.RefObject<HTMLElement>,
     fallbackRef: overlayRef as React.RefObject<HTMLElement>,
-    initialFocusRef: initialFocusRef || undefined,
+    initialFocusRef: initialFocusRef ?? undefined,
     enabled: ready && blocking && initialFocusRef !== false,
   })
 
@@ -181,7 +181,7 @@ export const BottomSheet = forwardRef<
 
   // New utility for using events safely
   const asyncSet = useCallback<typeof set>(
-    // @ts-ignore
+    // @ts-expect-error - Temporary type override for spring callback parameters
     ({ onRest, config: configOverride, ...opts }) =>
       // @ts-expect-error
       new Promise((resolve) =>
@@ -253,7 +253,7 @@ export const BottomSheet = forwardRef<
       onSnapStart: fromPromise(async ({ input }) => {
         return onSpringStartRef.current?.({
           type: 'SNAP',
-          source: input?.source || 'custom',
+          source: input?.source ?? 'custom',
         })
       }),
       onOpenStart: fromPromise(async () => {
@@ -271,7 +271,7 @@ export const BottomSheet = forwardRef<
       onSnapEnd: fromPromise(async ({ input }) => {
         return onSpringEndRef.current?.({
           type: 'SNAP',
-          source: input?.snapSource || 'custom',
+          source: input?.snapSource ?? 'custom',
         })
       }),
       onOpenEnd: fromPromise(async () => {
@@ -347,7 +347,7 @@ export const BottomSheet = forwardRef<
         })
       }),
       snapSmoothly: fromPromise(async ({ input }) => {
-        const snap = findSnapRef.current(input?.y || 0)
+        const snap = findSnapRef.current(input?.y ?? 0)
         heightRef.current = snap
         lastSnapRef.current = snap
         await asyncSet({
@@ -417,8 +417,8 @@ export const BottomSheet = forwardRef<
     () => () => {
       try {
         set.stop()
-      } catch (error) {
-        console.warn('Spring cleanup warning:', error)
+      } catch {
+        // Spring cleanup failed - this is expected during component unmounting
       }
       
       if (timeoutRef.current) {
@@ -534,7 +534,6 @@ export const BottomSheet = forwardRef<
     
     // Cancel the drag operation if the canDrag state changed
     if (!canDragRef.current) {
-      console.log('handleDrag cancelled dragging because canDragRef is false')
       cancel()
       return memo
     }
@@ -632,12 +631,6 @@ export const BottomSheet = forwardRef<
     }
 
     if (last) {
-      console.log('🎬 DRAG END - sending SNAP event with:', {
-        y: newY,
-        velocity: safeVelocity > 0.05 ? safeVelocity : 1,
-        source: 'dragging',
-      });
-
       send({
         type: 'SNAP',
         payload: {
@@ -697,7 +690,7 @@ export const BottomSheet = forwardRef<
           ...style,
           // Not overridable as the "focus lock with opacity 0" trick rely on it
           // @TODO the line below only fails on TS <4
-          // @ts-ignore
+          // @ts-expect-error - Spring type mismatch with older TS versions
           opacity: spring.ready,
         }
       } as any)}
@@ -746,6 +739,8 @@ export const BottomSheet = forwardRef<
     </animated.div>
   )
 })
+
+BottomSheet.displayName = 'BottomSheet'
 
 // Used for the data attribute, list over states available to CSS selectors
 const publicStates = [
