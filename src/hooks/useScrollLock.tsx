@@ -45,6 +45,8 @@ interface ExternalStyleTracker {
   } | null
   // Track which properties were changed by external libraries while we were active
   externallyModified: Set<string>
+  // Track our own applied values to distinguish from external changes
+  appliedByUs: Map<string, string>
 }
 
 class ModernScrollLock {
@@ -64,6 +66,7 @@ class ModernScrollLock {
     observer: null,
     originalStyles: null,
     externallyModified: new Set(),
+    appliedByUs: new Map(),
   }
 
   static getInstance(): ModernScrollLock {
@@ -104,6 +107,7 @@ class ModernScrollLock {
     
     // Reset tracking
     this.externalTracker.externallyModified.clear()
+    this.externalTracker.appliedByUs.clear()
   }
 
   private restoreOriginalStyles(): void {
@@ -138,18 +142,29 @@ class ModernScrollLock {
         if (this.originalStyles[prop] === '') {
           body.style.removeProperty(prop === 'paddingRight' ? 'padding-right' : prop)
         } else {
-          // Restore the original inline value
-          ;(body.style as any)[prop] = originalValue
+          // Restore the original inline value with type safety
+          if (prop === 'paddingRight') {
+            body.style.paddingRight = originalValue
+          } else if (prop === 'position') {
+            body.style.position = originalValue as any // position values are well-defined
+          } else if (prop === 'top') {
+            body.style.top = originalValue
+          } else if (prop === 'width') {
+            body.style.width = originalValue
+          }
         }
       }
     })
     
-    // Always restore scroll behavior on documentElement
+    // iOS-specific scroll restoration
     if (isIOS) {
-      documentElement.style.scrollBehavior = this.originalStyles.scrollBehavior || ''
+      // Temporarily disable smooth scrolling for instant restoration
+      documentElement.style.scrollBehavior = 'auto'
       
       // Restore scroll position
       window.scrollTo(0, this.scrollOffset)
+      
+      // Restore original scroll behavior after position is set
       requestAnimationFrame(() => {
         documentElement.style.scrollBehavior = this.originalStyles.scrollBehavior || ''
       })
@@ -173,26 +188,17 @@ class ModernScrollLock {
             body.style.overflow = 'hidden'
           }
           
-          // Track changes for other properties
+          // Track changes for other properties using precise tracking
           const currentStyles = window.getComputedStyle(body)
           const otherProperties = ['paddingRight', 'position', 'top', 'width'] as const
           
           otherProperties.forEach(prop => {
-            const currentValue = prop === 'paddingRight' ? 
-              currentStyles.paddingRight : 
-              (currentStyles as any)[prop]
-            const originalValue = this.externalTracker.originalStyles![prop]
+            const currentInlineValue = body.style[prop as any]
+            const appliedByUsValue = this.externalTracker.appliedByUs.get(prop)
             
-            if (currentValue !== originalValue) {
-              // Don't track our own changes as external
-              const isOurChange = (prop === 'paddingRight' && body.style.paddingRight !== '') ||
-                                (prop === 'position' && body.style.position === 'fixed') ||
-                                (prop === 'top' && body.style.top && body.style.top.includes('-')) ||
-                                (prop === 'width' && body.style.width === '100%')
-              
-              if (!isOurChange) {
-                this.externalTracker.externallyModified.add(prop)
-              }
+            // If we applied a value but it's now different, external library changed it
+            if (appliedByUsValue && currentInlineValue !== appliedByUsValue) {
+              this.externalTracker.externallyModified.add(prop)
             }
           })
         }
@@ -241,12 +247,15 @@ class ModernScrollLock {
     const { documentElement } = document
     const scrollbarWidth = this.getScrollbarWidth()
 
-    // Apply scroll lock styles
+    // Apply scroll lock styles and track what we applied
     body.style.overflow = 'hidden'
+    this.externalTracker.appliedByUs.set('overflow', 'hidden')
     
     // Compensate for scrollbar width if needed
     if (options.reserveScrollBarGap && scrollbarWidth > 0) {
-      body.style.paddingRight = `${scrollbarWidth}px`
+      const paddingValue = `${scrollbarWidth}px`
+      body.style.paddingRight = paddingValue
+      this.externalTracker.appliedByUs.set('paddingRight', paddingValue)
     }
 
     // iOS-specific handling
@@ -256,6 +265,10 @@ class ModernScrollLock {
       body.style.position = 'fixed'
       body.style.top = `-${this.scrollOffset}px`
       body.style.width = '100%'
+      
+      this.externalTracker.appliedByUs.set('position', 'fixed')
+      this.externalTracker.appliedByUs.set('top', `-${this.scrollOffset}px`)
+      this.externalTracker.appliedByUs.set('width', '100%')
     }
 
     // Add touch event handler for iOS
@@ -284,6 +297,7 @@ class ModernScrollLock {
 
     // Reset tracker
     this.externalTracker.originalStyles = null
+    this.externalTracker.appliedByUs.clear()
   }
 
   isScrollLocked(): boolean {

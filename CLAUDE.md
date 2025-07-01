@@ -46,7 +46,7 @@ This is a React component library that provides an accessible, animated bottom s
 - `useSnapPoints.tsx` - Snap point calculation and validation
 - `useFocusTrap.tsx` - Accessibility focus management
 - `useAriaHider.tsx` - ARIA screen reader management
-- `useScrollLock.tsx` - Body scroll prevention
+- `useScrollLock.tsx` - Body scroll prevention with conflict resolution
 - `useReady.tsx` - Component ready state management
 - `useReducedMotion.tsx` - Respects user motion preferences
 
@@ -99,3 +99,111 @@ Snap points are dynamically calculated based on content dimensions and can be cu
 
 ### Memory Management  
 The component is designed to mount on open and unmount on close to prevent memory leaks and ensure clean state.
+
+## Scroll Lock Conflict Resolution
+
+### Problem Context
+The library's scroll lock feature (`useScrollLock.tsx`) had critical conflicts with external UI libraries like Material UI that also manage body scroll styles.
+
+### Original Problem Flow
+```
+Step 1: MUI Drawer opens
+├── MUI sets: body.style.overflow = 'hidden'
+└── Page scroll: BLOCKED ✅
+
+Step 2: BottomSheet opens  
+├── We save: originalStyles.overflow = 'hidden' (MUI's value!)
+├── We set: body.style.overflow = 'hidden' (redundant)
+└── Page scroll: BLOCKED ✅
+
+Step 3: MUI Drawer closes
+├── MUI removes: body.style.overflow = ''
+└── Page scroll: UNBLOCKED ❌ (BottomSheet still open!)
+
+Step 4: BottomSheet closes
+├── We restore: body.style.overflow = 'hidden' (MUI's old value)
+└── Page scroll: BLOCKED FOREVER ❌❌
+```
+
+### Root Causes
+1. **Naive State Capture**: Saved external library's modified state as "original"
+2. **No Conflict Awareness**: No tracking of external changes during our lock period  
+3. **Blind Restoration**: Always restored saved state without context
+4. **No Active Maintenance**: Didn't maintain lock when external libraries interfered
+
+### Solution Architecture
+Implemented **MutationObserver-based intelligent conflict resolution**:
+
+```typescript
+interface ExternalStyleTracker {
+  observer: MutationObserver | null
+  originalStyles: Record<string, string> | null  // True original state
+  externallyModified: Set<string>                // Properties changed externally
+}
+```
+
+### Fixed Flow
+```
+Step 1: MUI Drawer opens
+├── MUI sets: body.style.overflow = 'hidden'
+└── Page scroll: BLOCKED ✅
+
+Step 2: BottomSheet opens
+├── We save: originalStyles.overflow = 'hidden' (current effective state)
+├── We save: inlineStyles.overflow = 'hidden' (MUI's inline style)  
+├── Start: MutationObserver monitoring body style changes
+├── We set: body.style.overflow = 'hidden' (maintain lock)
+└── Page scroll: BLOCKED ✅
+
+Step 3: MUI Drawer closes
+├── MUI removes: body.style.overflow = ''
+├── MutationObserver detects change
+├── We mark: externallyModified.add('overflow') 
+├── We immediately reapply: body.style.overflow = 'hidden'
+└── Page scroll: BLOCKED ✅ (maintained!)
+
+Step 4: BottomSheet closes
+├── Check: overflow in externallyModified? YES
+├── Action: body.style.removeProperty('overflow') (don't restore)
+├── Stop: MutationObserver
+└── Page scroll: UNBLOCKED ✅ (correct!)
+```
+
+### Key Implementation Details
+
+**Active Monitoring:**
+```typescript
+this.externalTracker.observer = new MutationObserver((mutations) => {
+  // If external library removed our overflow: hidden, reapply immediately
+  if (body.style.overflow !== 'hidden') {
+    this.externalTracker.externallyModified.add('overflow')
+    body.style.overflow = 'hidden'  // Maintain lock!
+  }
+})
+```
+
+**Intelligent Restoration:**
+```typescript
+// Special handling for overflow - if external library removed it, don't restore
+if (this.externalTracker.externallyModified.has('overflow')) {
+  body.style.removeProperty('overflow')  // Let external changes take effect
+} else {
+  body.style.overflow = originalValue    // Normal restoration
+}
+```
+
+### Testing Strategy
+Created comprehensive test page (`pages/mui-scroll-lock-test.tsx`) with:
+- Material UI v7.2 integration
+- Sequential interaction flow (Drawer → BottomSheet → close sequence)
+- Visual feedback for each step
+- Z-index conflict resolution
+- Both problematic and fixed behavior comparison
+
+### Compatibility Notes
+- **Backward Compatible**: No breaking changes to public API
+- **Platform Specific**: iOS uses different scroll lock strategy (`position: fixed`)
+- **Library Agnostic**: Works with any library that modifies body styles
+- **Performance**: MutationObserver only active during scroll lock period
+
+This solution resolves the fundamental conflict between concurrent scroll lock implementations while maintaining robust scroll prevention.
