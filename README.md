@@ -660,3 +660,4 @@ npm install --save-dev @types/react@^19.0.0 typescript@^5.0.0
 [module-formats-badge]: https://img.shields.io/badge/module%20formats-cjs%2C%20es%2C%20modern-green.svg?style=flat-square
 [react-spring]: https://github.com/pmndrs/react-spring
 [@use-gesture/react]: https://github.com/pmndrs/use-gesture
+\nTrigger CI for prerelease.
