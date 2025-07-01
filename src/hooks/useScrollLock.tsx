@@ -33,16 +33,18 @@ interface OriginalStyles {
   scrollBehavior?: string
 }
 
-// Track external style changes
+// Track external style changes for properties we modify
 interface ExternalStyleTracker {
   observer: MutationObserver | null
-  originalComputedStyles: {
+  originalStyles: {
     overflow: string
     paddingRight: string
     position: string
     top: string
     width: string
   } | null
+  // Track which properties were changed by external libraries while we were active
+  externallyModified: Set<string>
 }
 
 class ModernScrollLock {
@@ -60,7 +62,8 @@ class ModernScrollLock {
   private touchMoveHandler: ((e: TouchEvent) => void) | null = null
   private externalTracker: ExternalStyleTracker = {
     observer: null,
-    originalComputedStyles: null,
+    originalStyles: null,
+    externallyModified: new Set(),
   }
 
   static getInstance(): ModernScrollLock {
@@ -79,7 +82,17 @@ class ModernScrollLock {
     const { body } = document
     const computedStyles = window.getComputedStyle(body)
     
-    // Save inline styles (for our own changes)
+    // Save the current state of ALL properties we're about to modify
+    // This includes both inline and computed values
+    this.externalTracker.originalStyles = {
+      overflow: body.style.overflow || computedStyles.overflow,
+      paddingRight: body.style.paddingRight || computedStyles.paddingRight,
+      position: body.style.position || computedStyles.position,
+      top: body.style.top || computedStyles.top,
+      width: body.style.width || computedStyles.width,
+    }
+    
+    // Also save inline styles for our own restoration logic
     this.originalStyles = {
       overflow: body.style.overflow,
       paddingRight: body.style.paddingRight,
@@ -89,63 +102,106 @@ class ModernScrollLock {
       scrollBehavior: document.documentElement.style.scrollBehavior,
     }
     
-    // Save computed styles (the actual applied styles before our changes)
-    this.externalTracker.originalComputedStyles = {
-      overflow: computedStyles.overflow,
-      paddingRight: computedStyles.paddingRight,
-      position: computedStyles.position,
-      top: computedStyles.top,
-      width: computedStyles.width,
-    }
+    // Reset tracking
+    this.externalTracker.externallyModified.clear()
   }
 
   private restoreOriginalStyles(): void {
     const { body } = document
     const { documentElement } = document
     
-    // Check if external libraries changed styles while we were locked
-    const currentComputedStyles = window.getComputedStyle(body)
-    const shouldRestoreComputed = this.externalTracker.originalComputedStyles &&
-      currentComputedStyles.overflow !== this.externalTracker.originalComputedStyles.overflow
+    if (!this.externalTracker.originalStyles) return
     
-    // Remove our inline styles first
-    body.style.overflow = this.originalStyles.overflow
-    body.style.paddingRight = this.originalStyles.paddingRight
-    
-    if (isIOS) {
-      body.style.position = this.originalStyles.position || ''
-      body.style.top = this.originalStyles.top || ''
-      body.style.width = this.originalStyles.width || ''
-      documentElement.style.scrollBehavior = this.originalStyles.scrollBehavior || ''
+    // Special handling for overflow - if external library removed it, don't restore to hidden
+    if (this.externalTracker.externallyModified.has('overflow')) {
+      // External library wanted to remove overflow, so we remove our inline style
+      // allowing their intention to take effect
+      body.style.removeProperty('overflow')
+    } else {
+      // Normal restoration for overflow
+      const originalValue = this.externalTracker.originalStyles!.overflow
+      if (this.originalStyles.overflow === '') {
+        body.style.removeProperty('overflow')
+      } else {
+        body.style.overflow = originalValue
+      }
     }
     
-    // If external library changed styles and they shouldn't be 'hidden', restore computed styles
-    if (shouldRestoreComputed && this.externalTracker.originalComputedStyles && 
-        this.externalTracker.originalComputedStyles.overflow !== 'hidden') {
-      // Only restore if computed style was not 'hidden' originally
-      if (body.style.overflow === '' || body.style.overflow === 'hidden') {
-        body.style.overflow = this.externalTracker.originalComputedStyles.overflow
+    // Handle other properties normally
+    const otherProperties = ['paddingRight', 'position', 'top', 'width'] as const
+    
+    otherProperties.forEach(prop => {
+      if (!this.externalTracker.externallyModified.has(prop)) {
+        const originalValue = this.externalTracker.originalStyles![prop]
+        
+        // If original value was from computed styles (not inline), remove the inline property
+        if (this.originalStyles[prop] === '') {
+          body.style.removeProperty(prop === 'paddingRight' ? 'padding-right' : prop)
+        } else {
+          // Restore the original inline value
+          ;(body.style as any)[prop] = originalValue
+        }
       }
+    })
+    
+    // Always restore scroll behavior on documentElement
+    if (isIOS) {
+      documentElement.style.scrollBehavior = this.originalStyles.scrollBehavior || ''
+      
+      // Restore scroll position
+      window.scrollTo(0, this.scrollOffset)
+      requestAnimationFrame(() => {
+        documentElement.style.scrollBehavior = this.originalStyles.scrollBehavior || ''
+      })
     }
   }
 
   private startTrackingExternalChanges(): void {
     if (typeof window === 'undefined' || this.externalTracker.observer) return
     
-    this.externalTracker.observer = new MutationObserver(() => {
-      // Update our snapshot of computed styles when external changes occur
-      if (this.isLocked && this.externalTracker.originalComputedStyles) {
-        const computedStyles = window.getComputedStyle(document.body)
-        // Only update if the change wasn't from us
-        if (computedStyles.overflow !== 'hidden') {
-          this.externalTracker.originalComputedStyles.overflow = computedStyles.overflow
+    this.externalTracker.observer = new MutationObserver((mutations) => {
+      if (!this.isLocked || !this.externalTracker.originalStyles) return
+      
+      mutations.forEach(mutation => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+          const { body } = document
+          
+          // If external library removed our overflow: hidden, reapply it immediately
+          // But mark that external library wanted to remove it (for proper restoration)
+          if (body.style.overflow !== 'hidden') {
+            this.externalTracker.externallyModified.add('overflow')
+            body.style.overflow = 'hidden'
+          }
+          
+          // Track changes for other properties
+          const currentStyles = window.getComputedStyle(body)
+          const otherProperties = ['paddingRight', 'position', 'top', 'width'] as const
+          
+          otherProperties.forEach(prop => {
+            const currentValue = prop === 'paddingRight' ? 
+              currentStyles.paddingRight : 
+              (currentStyles as any)[prop]
+            const originalValue = this.externalTracker.originalStyles![prop]
+            
+            if (currentValue !== originalValue) {
+              // Don't track our own changes as external
+              const isOurChange = (prop === 'paddingRight' && body.style.paddingRight !== '') ||
+                                (prop === 'position' && body.style.position === 'fixed') ||
+                                (prop === 'top' && body.style.top && body.style.top.includes('-')) ||
+                                (prop === 'width' && body.style.width === '100%')
+              
+              if (!isOurChange) {
+                this.externalTracker.externallyModified.add(prop)
+              }
+            }
+          })
         }
-      }
+      })
     })
     
     this.externalTracker.observer.observe(document.body, {
       attributes: true,
-      attributeFilter: ['style', 'class'],
+      attributeFilter: ['style'],
       subtree: false,
     })
   }
@@ -185,7 +241,7 @@ class ModernScrollLock {
     const { documentElement } = document
     const scrollbarWidth = this.getScrollbarWidth()
 
-    // Apply base scroll lock styles
+    // Apply scroll lock styles
     body.style.overflow = 'hidden'
     
     // Compensate for scrollbar width if needed
@@ -226,18 +282,8 @@ class ModernScrollLock {
     // Restore original styles
     this.restoreOriginalStyles()
 
-    // iOS-specific scroll restoration
-    if (isIOS) {
-      // Restore scroll position without smooth scrolling
-      window.scrollTo(0, this.scrollOffset)
-      // Restore smooth scrolling after a frame
-      requestAnimationFrame(() => {
-        document.documentElement.style.scrollBehavior = this.originalStyles.scrollBehavior || ''
-      })
-    }
-    
     // Reset tracker
-    this.externalTracker.originalComputedStyles = null
+    this.externalTracker.originalStyles = null
   }
 
   isScrollLocked(): boolean {

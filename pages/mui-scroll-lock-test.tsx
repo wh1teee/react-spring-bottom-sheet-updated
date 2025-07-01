@@ -242,6 +242,9 @@ export default function MUIScrollLockTest() {
         defaultSnap={({ maxHeight }) => maxHeight / 2}
         snapPoints={({ maxHeight }) => [maxHeight * 0.3, maxHeight * 0.6, maxHeight * 0.9]}
         useProblematic={useProblematicBehavior}
+        style={{
+          '--rsbs-z-index': '1400', // Higher than MUI Drawer (1200) and Modal (1300)
+        } as React.CSSProperties}
       >
         <Box sx={{ p: 3 }}>
           <Alert severity="info" sx={{ mb: 2 }}>
@@ -251,6 +254,13 @@ export default function MUIScrollLockTest() {
                 ? "🔴 Problematic: Saved MUI's overflow:hidden as 'original'. Now close drawer first!"
                 : "✅ Fixed: Using new scroll lock with MutationObserver tracking."
               }
+            </Typography>
+          </Alert>
+          
+          <Alert severity="success" sx={{ mb: 2 }}>
+            <Typography variant="caption">
+              ✅ Bottom Sheet is now on top of Drawer (z-index: 1400). 
+              You can see the drawer content behind but this sheet should be fully interactive.
             </Typography>
           </Alert>
           
