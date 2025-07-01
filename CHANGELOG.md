@@ -1,3 +1,10 @@
+# [4.0.0-beta.8](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.7...v4.0.0-beta.8) (2025-07-01)
+
+
+### Bug Fixes
+
+* ensure proper cleanup of iOS body styles after scroll unlock ([cd5ac7b](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/cd5ac7bee7e68b6f76c105f5717e0d1182de90d3))
+
 # [4.0.0-beta.7](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.6...v4.0.0-beta.7) (2025-07-01)
 
 
