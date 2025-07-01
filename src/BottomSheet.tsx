@@ -145,7 +145,7 @@ export const BottomSheet = forwardRef<
   const focusTrapRef = useFocusTrap({
     targetRef: containerRef as React.RefObject<HTMLElement>,
     fallbackRef: overlayRef as React.RefObject<HTMLElement>,
-    initialFocusRef: initialFocusRef ?? undefined,
+    initialFocusRef: initialFocusRef || undefined,
     enabled: ready && blocking && initialFocusRef !== false,
   })
 

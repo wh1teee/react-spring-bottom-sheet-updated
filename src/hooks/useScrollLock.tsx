@@ -166,6 +166,7 @@ class ModernScrollLock {
       
       // Restore original scroll behavior after position is set
       requestAnimationFrame(() => {
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- Need to handle empty string as falsy
         documentElement.style.scrollBehavior = this.originalStyles.scrollBehavior || ''
       })
     }
