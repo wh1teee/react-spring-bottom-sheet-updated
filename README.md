@@ -518,12 +518,12 @@ export default function Example() {
 
 ## Common Integration Problems
 
-### Focus Conflicts with Material UI Components
+### Focus and Scroll Lock Conflicts with Material UI Components
 
-If you're using the bottom sheet inside other components that manage focus (like Material UI Drawer), you may encounter focus conflicts:
+If you're using the bottom sheet with other components that manage focus or scroll locking (like Material UI Drawer), you may encounter conflicts:
 
-**Problem**: Call stack overflow when using bottom sheet with Material UI Drawer
-**Solution**: Set `disableEnforceFocus={true}` on the Material UI Drawer when the bottom sheet is open:
+**Problem**: Call stack overflow or scroll lock conflicts when using bottom sheet with Material UI components
+**Solution**: Set `disableEnforceFocus={true}` on the Material UI component when the bottom sheet is open:
 
 ```jsx
 import { Drawer } from '@mui/material'
@@ -538,7 +538,6 @@ function MyComponent() {
       <Drawer 
         open={drawerOpen}
         disableEnforceFocus={sheetOpen} // Disable when bottom sheet is open
-        disableScrollLock={!sheetOpen} // CRITICAL: Disable when bottom sheet is closed
       >
         {/* Drawer content */}
       </Drawer>
@@ -554,7 +553,7 @@ function MyComponent() {
 }
 ```
 
-**⚠️ IMPORTANT**: When using `disableEnforceFocus={sheetOpen}`, you MUST also add `disableScrollLock={!sheetOpen}` to prevent scroll lock conflicts. Without this, if the MUI component closes first, there will be a conflict over who manages body scroll locking, leaving the page "frozen" with `overflow: hidden` until a page refresh.
+**✅ AUTOMATIC SCROLL LOCK MANAGEMENT**: This library now automatically handles scroll lock conflicts with other libraries like Material UI. The improved scroll lock implementation uses `MutationObserver` to track external style changes and ensures proper restoration of scroll behavior when components are closed in any order. You no longer need to manually manage `disableScrollLock` properties.
 
 ### Portal-Rendered Components Inside Bottom Sheet
 

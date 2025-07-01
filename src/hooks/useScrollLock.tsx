@@ -33,6 +33,18 @@ interface OriginalStyles {
   scrollBehavior?: string
 }
 
+// Track external style changes
+interface ExternalStyleTracker {
+  observer: MutationObserver | null
+  originalComputedStyles: {
+    overflow: string
+    paddingRight: string
+    position: string
+    top: string
+    width: string
+  } | null
+}
+
 class ModernScrollLock {
   private static instance: ModernScrollLock
   private isLocked = false
@@ -46,6 +58,10 @@ class ModernScrollLock {
     scrollBehavior: '',
   }
   private touchMoveHandler: ((e: TouchEvent) => void) | null = null
+  private externalTracker: ExternalStyleTracker = {
+    observer: null,
+    originalComputedStyles: null,
+  }
 
   static getInstance(): ModernScrollLock {
     if (!ModernScrollLock.instance) {
@@ -61,6 +77,9 @@ class ModernScrollLock {
 
   private saveOriginalStyles(): void {
     const { body } = document
+    const computedStyles = window.getComputedStyle(body)
+    
+    // Save inline styles (for our own changes)
     this.originalStyles = {
       overflow: body.style.overflow,
       paddingRight: body.style.paddingRight,
@@ -69,12 +88,27 @@ class ModernScrollLock {
       width: body.style.width,
       scrollBehavior: document.documentElement.style.scrollBehavior,
     }
+    
+    // Save computed styles (the actual applied styles before our changes)
+    this.externalTracker.originalComputedStyles = {
+      overflow: computedStyles.overflow,
+      paddingRight: computedStyles.paddingRight,
+      position: computedStyles.position,
+      top: computedStyles.top,
+      width: computedStyles.width,
+    }
   }
 
   private restoreOriginalStyles(): void {
     const { body } = document
     const { documentElement } = document
     
+    // Check if external libraries changed styles while we were locked
+    const currentComputedStyles = window.getComputedStyle(body)
+    const shouldRestoreComputed = this.externalTracker.originalComputedStyles &&
+      currentComputedStyles.overflow !== this.externalTracker.originalComputedStyles.overflow
+    
+    // Remove our inline styles first
     body.style.overflow = this.originalStyles.overflow
     body.style.paddingRight = this.originalStyles.paddingRight
     
@@ -83,6 +117,43 @@ class ModernScrollLock {
       body.style.top = this.originalStyles.top || ''
       body.style.width = this.originalStyles.width || ''
       documentElement.style.scrollBehavior = this.originalStyles.scrollBehavior || ''
+    }
+    
+    // If external library changed styles and they shouldn't be 'hidden', restore computed styles
+    if (shouldRestoreComputed && this.externalTracker.originalComputedStyles && 
+        this.externalTracker.originalComputedStyles.overflow !== 'hidden') {
+      // Only restore if computed style was not 'hidden' originally
+      if (body.style.overflow === '' || body.style.overflow === 'hidden') {
+        body.style.overflow = this.externalTracker.originalComputedStyles.overflow
+      }
+    }
+  }
+
+  private startTrackingExternalChanges(): void {
+    if (typeof window === 'undefined' || this.externalTracker.observer) return
+    
+    this.externalTracker.observer = new MutationObserver(() => {
+      // Update our snapshot of computed styles when external changes occur
+      if (this.isLocked && this.externalTracker.originalComputedStyles) {
+        const computedStyles = window.getComputedStyle(document.body)
+        // Only update if the change wasn't from us
+        if (computedStyles.overflow !== 'hidden') {
+          this.externalTracker.originalComputedStyles.overflow = computedStyles.overflow
+        }
+      }
+    })
+    
+    this.externalTracker.observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['style', 'class'],
+      subtree: false,
+    })
+  }
+  
+  private stopTrackingExternalChanges(): void {
+    if (this.externalTracker.observer) {
+      this.externalTracker.observer.disconnect()
+      this.externalTracker.observer = null
     }
   }
 
@@ -107,6 +178,7 @@ class ModernScrollLock {
     if (this.isLocked || typeof window === 'undefined') return
 
     this.saveOriginalStyles()
+    this.startTrackingExternalChanges()
     this.isLocked = true
 
     const { body } = document
@@ -123,7 +195,7 @@ class ModernScrollLock {
 
     // iOS-specific handling
     if (isIOS) {
-      this.scrollOffset = window.pageYOffset
+      this.scrollOffset = window.scrollY
       documentElement.style.scrollBehavior = 'unset'
       body.style.position = 'fixed'
       body.style.top = `-${this.scrollOffset}px`
@@ -148,6 +220,9 @@ class ModernScrollLock {
       this.touchMoveHandler = null
     }
 
+    // Stop tracking external changes
+    this.stopTrackingExternalChanges()
+
     // Restore original styles
     this.restoreOriginalStyles()
 
@@ -160,6 +235,9 @@ class ModernScrollLock {
         document.documentElement.style.scrollBehavior = this.originalStyles.scrollBehavior || ''
       })
     }
+    
+    // Reset tracker
+    this.externalTracker.originalComputedStyles = null
   }
 
   isScrollLocked(): boolean {
