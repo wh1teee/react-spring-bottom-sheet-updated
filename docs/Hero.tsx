@@ -34,6 +34,12 @@ const Links = ({ className }: { className?: string }) => (
     </Link>
     <Link
       className={className}
+      href="/mui-scroll-lock-test"
+    >
+      MUI Test
+    </Link>
+    <Link
+      className={className}
       href="https://github.com/wh1teee/react-spring-bottom-sheet-updated"
     >
       GitHub

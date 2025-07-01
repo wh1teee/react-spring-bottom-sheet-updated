@@ -2,8 +2,13 @@ import { inspect } from '@xstate/inspect'
 import type { InferGetStaticPropsType } from 'next'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
+import { ThemeProvider } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
+import { CacheProvider, EmotionCache } from '@emotion/react'
 import { capitalize } from '../docs/utils'
 import { debugging } from '../src/utils'
+import theme from '../docs/theme'
+import createEmotionCache from '../docs/createEmotionCache'
 
 import '../docs/style.css'
 import '../src/style.css'
@@ -49,13 +54,27 @@ export async function getStaticProps() {
 
 export type GetStaticProps = InferGetStaticPropsType<typeof getStaticProps>
 
-export default function _AppPage({ Component, pageProps }: AppProps) {
+// Client-side cache, shared for the whole session of the user in the browser.
+const clientSideEmotionCache = createEmotionCache()
+
+interface MyAppProps extends AppProps {
+  emotionCache?: EmotionCache
+}
+
+export default function _AppPage(props: MyAppProps) {
+  const { Component, emotionCache = clientSideEmotionCache, pageProps } = props
+  
   return (
-    <>
+    <CacheProvider value={emotionCache}>
       <Head>
         <meta name="viewport" content="width=device-width,viewport-fit=cover" />
+        <meta name="emotion-insertion-point" content="" />
       </Head>
-      <Component {...pageProps} />
-    </>
+      <ThemeProvider theme={theme}>
+        {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+        <CssBaseline />
+        <Component {...pageProps} />
+      </ThemeProvider>
+    </CacheProvider>
   )
 }
