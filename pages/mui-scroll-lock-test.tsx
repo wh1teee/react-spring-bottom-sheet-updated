@@ -58,6 +58,43 @@ export default function MUIScrollLockTest() {
     <Box sx={{ width: drawerWidth }} role="presentation">
       <Toolbar />
       <Divider />
+      
+      <Box sx={{ p: 2 }}>
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          <AlertTitle>Step 1 Complete: Drawer Open</AlertTitle>
+          <Typography variant="body2">
+            MUI has set overflow:hidden on body. Now open the Bottom Sheet.
+          </Typography>
+        </Alert>
+        
+        <Button
+          variant="contained"
+          color="secondary"
+          fullWidth
+          onClick={() => setSheetOpen(true)}
+          disabled={sheetOpen}
+          sx={{ mb: 2 }}
+        >
+          2. Open Bottom Sheet
+        </Button>
+        
+        <FormControlLabel
+          control={
+            <Switch
+              checked={useProblematicBehavior}
+              onChange={(e) => setUseProblematicBehavior(e.target.checked)}
+              size="small"
+            />
+          }
+          label={
+            <Typography variant="caption">
+              Problematic Mode
+            </Typography>
+          }
+        />
+      </Box>
+      
+      <Divider />
       <List>
         {['Home', 'Settings', 'About'].map((text, index) => (
           <ListItem key={text} disablePadding>
@@ -146,48 +183,23 @@ export default function MUIScrollLockTest() {
         <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
           <Button
             variant="contained"
+            size="large"
             onClick={() => setDrawerOpen(true)}
             startIcon={<MenuIcon />}
+            disabled={drawerOpen}
           >
-            1. Open Drawer
+            1. Start Test - Open Drawer
           </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => setSheetOpen(true)}
-            disabled={!drawerOpen}
-          >
-            2. Open Bottom Sheet
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={() => setDrawerOpen(false)}
-            disabled={!drawerOpen || !sheetOpen}
-          >
-            3. Close Drawer
-          </Button>
-          <Button
-            variant="outlined"
-            color="error"
-            onClick={() => setSheetOpen(false)}
-            disabled={!sheetOpen || drawerOpen}
-          >
-            4. Close Bottom Sheet
-          </Button>
-        </Box>
-        
-        <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+          
           <Button
             variant="outlined"
             onClick={() => setDialogOpen(true)}
-            size="small"
           >
             Test Dialog
           </Button>
           <Button
             variant="outlined"
             onClick={() => setModalOpen(true)}
-            size="small"
           >
             Test Modal
           </Button>
@@ -199,7 +211,6 @@ export default function MUIScrollLockTest() {
               setDialogOpen(false)
               setModalOpen(false)
             }}
-            size="small"
           >
             Reset All
           </Button>
@@ -233,29 +244,58 @@ export default function MUIScrollLockTest() {
         useProblematic={useProblematicBehavior}
       >
         <Box sx={{ p: 3 }}>
+          <Alert severity="info" sx={{ mb: 2 }}>
+            <AlertTitle>Step 2 Complete: Bottom Sheet Open</AlertTitle>
+            <Typography variant="body2">
+              {useProblematicBehavior 
+                ? "🔴 Problematic: Saved MUI's overflow:hidden as 'original'. Now close drawer first!"
+                : "✅ Fixed: Using new scroll lock with MutationObserver tracking."
+              }
+            </Typography>
+          </Alert>
+          
           <Typography variant="h6" gutterBottom>
-            Bottom Sheet Content
+            Scroll Lock Conflict Test
           </Typography>
-          <Typography variant="body1" paragraph>
-            This bottom sheet tests scroll lock behavior with MUI components.
+          
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Mode: {useProblematicBehavior ? "Problematic (old behavior)" : "Fixed (new behavior)"}
           </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            Current mode: {useProblematicBehavior ? "Problematic (old)" : "Fixed (new)"}
-          </Typography>
-          <Box sx={{ mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Button
-              variant="outlined"
+              variant="contained"
+              color="warning"
+              onClick={() => setDrawerOpen(false)}
+              disabled={!drawerOpen}
+              fullWidth
+            >
+              3. Close Drawer First
+            </Button>
+            
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => setSheetOpen(false)}
+              disabled={drawerOpen}
+              fullWidth
+            >
+              4. Close Bottom Sheet Last
+            </Button>
+            
+            <Divider sx={{ my: 1 }} />
+            
+            <Typography variant="caption" color="text.secondary">
+              After step 4, check if page scroll works. In problematic mode, 
+              page should be frozen (overflow:hidden restored incorrectly).
+            </Typography>
+            
+            <Button
+              variant="text"
               size="small"
               onClick={() => setDialogOpen(true)}
             >
-              Open Dialog from Sheet
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => setSheetOpen(false)}
-            >
-              Close Sheet
+              Test Dialog
             </Button>
           </Box>
         </Box>
