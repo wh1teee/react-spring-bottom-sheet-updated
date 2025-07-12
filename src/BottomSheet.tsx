@@ -68,7 +68,7 @@ export const BottomSheet = forwardRef<
     header,
     open: _open,
     initialState,
-    lastSnapRef,
+    lastSnapRef: lastSnapRefProp,
     initialFocusRef,
     onDismiss,
     maxHeight: controlledMaxHeight,
@@ -98,7 +98,7 @@ export const BottomSheet = forwardRef<
   // Before any animations can start we need to measure a few things, like the viewport and the dimensions of content, and header + footer if they exist
   // @TODO make ready its own state perhaps, before open or closed
   const { ready, registerReady } = useReady()
-
+  const lastSnapRef = useRef(lastSnapRefProp?.current ?? null)
   // Controls the drag handler, used by spring operations that happen outside the render loop in React
   const canDragRef = useRef(false)
 
@@ -726,7 +726,13 @@ export const BottomSheet = forwardRef<
             {header}
           </div>
         )}
-        <div key="scroll" data-rsbs-scroll ref={scrollRef} {...(expandOnContentDrag ? bind({ isContentDragging: true }) : {})}>
+        <div 
+          key="scroll" 
+          data-rsbs-scroll 
+          data-body-scroll-lock-ignore
+          ref={scrollRef} 
+          {...(expandOnContentDrag ? bind({ isContentDragging: true }) : {})}
+        >
           <div data-rsbs-content ref={contentRef}>
             {children}
           </div>

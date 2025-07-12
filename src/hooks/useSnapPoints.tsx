@@ -79,7 +79,7 @@ export function useSnapPoints({
         minHeight,
         maxHeight,
         snapPoints,
-        lastSnap: lastSnapRef.current,
+        lastSnap: lastSnapRef?.current,
       })
     } else {
       unsafeSearch = numberOrCallback
