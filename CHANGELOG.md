@@ -1,3 +1,10 @@
+# [4.0.0-beta.9](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.8...v4.0.0-beta.9) (2025-07-12)
+
+
+### Bug Fixes
+
+* improve lastSnapRef handling and prevent scroll lock conflicts ([dc9567a](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/dc9567a78abbf12ddd1f5df13cf08bb63db602f1))
+
 # [4.0.0-beta.8](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.7...v4.0.0-beta.8) (2025-07-01)
 
 
