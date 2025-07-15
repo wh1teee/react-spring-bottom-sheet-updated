@@ -53,6 +53,44 @@ const defaultSpringConfig: SpringConfig = {
 // @TODO implement AbortController to deal with race conditions
 
 // @TODO rename to SpringBottomSheet and allow userland to import it directly, for those who want maximum control and minimal bundlesize
+
+/**
+ * Main BottomSheet component implementation using React Spring for animations and gestures.
+ * 
+ * This component provides a fully accessible, animated bottom sheet that can be dragged,
+ * snapped to different heights, and dismissed via swipe gestures. It includes comprehensive
+ * mobile gesture support with configurable close logic and adaptive threshold calculation.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <BottomSheet
+ *   open={isOpen}
+ *   onDismiss={() => setIsOpen(false)}
+ *   snapPoints={({ maxHeight }) => [maxHeight * 0.4, maxHeight * 0.8]}
+ *   closeLogic="distance"
+ *   closeThreshold={0.4}
+ * >
+ *   <div>Sheet content</div>
+ * </BottomSheet>
+ * ```
+ * 
+ * @param props - Combined props including initialState, lastSnapRef, and all Props
+ * @param props.initialState - Initial animation state ('OPEN' or 'CLOSED')
+ * @param props.lastSnapRef - Reference to the last snap point for state persistence
+ * @param props.closeLogic - Swipe-to-close gesture logic ('original' | 'distance' | 'movement')
+ * @param props.closeThreshold - Threshold for close gesture as percentage of modal height (0-1)
+ * @param ref - Forward ref for imperative API access
+ * 
+ * @returns Animated bottom sheet component with gesture handling and accessibility features
+ * 
+ * @complexity O(1) - Linear performance with content size
+ * @callFlow
+ * - Renders animated.div with backdrop and overlay
+ * - Uses useDrag for gesture handling via handleDrag
+ * - Manages state with XState overlay machine
+ * - Handles focus trap, scroll lock, and ARIA management
+ */
 export const BottomSheet = forwardRef<
   RefHandles,
   {
@@ -85,6 +123,8 @@ export const BottomSheet = forwardRef<
     disableExpandList = [],
     preventPullUp = false,
     springConfig: customSpringConfig,
+    closeLogic = 'distance',
+    closeThreshold = 0.4,
     ...props
   },
   forwardRef
@@ -501,6 +541,42 @@ export const BottomSheet = forwardRef<
     }
   }, [expandOnContentDrag, scrollRef, disableExpandList])
 
+  /**
+   * Handles drag gestures for the bottom sheet including swipe-to-close functionality.
+   * 
+   * This function processes all drag interactions, manages snap point transitions,
+   * and implements the adaptive close threshold logic for mobile gesture handling.
+   * It includes comprehensive safety checks and supports multiple close logic modes.
+   * 
+   * @param gestureState - Object containing gesture state from @use-gesture/react
+   * @param gestureState.args - Array containing gesture configuration options
+   * @param gestureState.args[0].closeOnTap - Whether tap gestures should trigger close
+   * @param gestureState.args[0].isContentDragging - Whether content area is being dragged
+   * @param gestureState.cancel - Function to cancel the current gesture
+   * @param gestureState.direction - [x, y] direction vector of the gesture
+   * @param gestureState.down - Whether the pointer is currently down
+   * @param gestureState.first - Whether this is the first event in the gesture
+   * @param gestureState.last - Whether this is the last event in the gesture
+   * @param gestureState.memo - Previous position value for gesture continuity
+   * @param gestureState.movement - [x, y] movement vector from gesture start
+   * @param gestureState.tap - Whether this is a tap gesture
+   * @param gestureState.velocity - Current gesture velocity for prediction
+   * @param gestureState.event - Native DOM event that triggered the gesture
+   * 
+   * @returns Updated memo value for gesture continuity
+   * 
+   * @complexity O(1) - Constant time operations with DOM queries
+   * @callFlow
+   * - Validates gesture state and safety conditions
+   * - Calculates predicted position using velocity
+   * - Applies close logic based on closeLogic prop:
+   *   - 'distance': Pure distance-based (mobile-optimized)
+   *   - 'movement': Distance + cumulative movement validation
+   *   - 'original': Distance + direction tolerance
+   * - Uses adaptive threshold: rawY + predictedDistance < maxHeight * closeThreshold
+   * - Handles rubberband bounds and snap point transitions
+   * - Integrates with expandOnContentDrag and scroll prevention
+   */
   const handleDrag = ({
     args: [{ closeOnTap = false, isContentDragging = false } = {}] = [],
     cancel,
@@ -565,15 +641,46 @@ export const BottomSheet = forwardRef<
       Math.min(maxSnapRef.current, rawY + predictedDistance * 2)
     )
 
-    if (
-      !down &&
-      onDismiss &&
-      direction >= 0 &&
-      rawY + predictedDistance < minSnapRef.current / 2
-      && (!hasScroll || scrollRef.current.scrollTop <= 0)
-    ) {
+    // Close logic: dismiss if predicted final position crosses the adaptive threshold
+    const shouldClose = (() => {
+      // For expandOnContentDrag mode, require scroll to be at top before closing
+      // This prevents accidental closure when users are scrolling content
+      const scrollCondition = expandOnContentDrag 
+        ? (!hasScroll || scrollRef.current.scrollTop <= 0)
+        : true;
+      
+      /*
+       * Adaptive close threshold calculation:
+       * - rawY: current position from dragging
+       * - predictedDistance: velocity-based prediction of final position
+       * - maxHeightRef.current * closeThreshold: adaptive threshold (e.g., 40% of screen height)
+       * 
+       * This replaces the previous static threshold (minSnapRef.current / 2) which caused
+       * closure failures from partially expanded states. The adaptive approach works
+       * consistently from any snap point by using a percentage of total screen height.
+       */
+      const baseCondition = !down && onDismiss && rawY + predictedDistance < maxHeightRef.current * closeThreshold && scrollCondition
+      
+      switch (closeLogic) {
+        case 'distance':
+          // Pure distance-based closing (recommended for mobile)
+          // Most reliable for touch devices with imperfect gesture endings
+          return baseCondition
+        case 'movement':
+          // Distance + cumulative movement validation
+          // Requires overall downward movement (my <= 0) to prevent accidental closure
+          return baseCondition && my <= 0
+        case 'original':
+        default:
+          // Distance + direction tolerance for imperfect mobile gestures
+          // Allows slight upward direction (>= -0.5) at gesture end for mobile tolerance
+          return baseCondition && direction >= -0.5
+      }
+    })()
+
+    if (shouldClose) {
       cancel()
-      onDismiss()
+      onDismiss?.()
       return memo
     }
 
@@ -761,6 +868,26 @@ const publicStates = [
 ]
 
 // Default prop values that are callbacks, and it's nice to save some memory and reuse their instances since they're pure
+
+/**
+ * Calculates the default snap point for the bottom sheet on initial open.
+ * 
+ * Prioritizes the last user-selected snap point for consistency, falling back
+ * to the minimum available snap point for predictable initial positioning.
+ * 
+ * @param config - Object containing snap point configuration
+ * @param config.snapPoints - Array of available snap points in pixels
+ * @param config.lastSnap - Last snap point selected by user (for persistence)
+ * 
+ * @returns Default snap point in pixels, or 0 if no valid points found
+ * 
+ * @complexity O(n) - Linear scan of snap points for validation
+ * @callFlow
+ * - Returns lastSnap if valid and finite
+ * - Filters out invalid snap points (NaN, undefined)
+ * - Returns minimum valid snap point as fallback
+ * - Returns 0 if no valid snap points exist
+ */
 function _defaultSnap({ snapPoints, lastSnap }: defaultSnapProps) {
   if (Number.isFinite(lastSnap) && lastSnap !== null) {
     return lastSnap
@@ -768,6 +895,23 @@ function _defaultSnap({ snapPoints, lastSnap }: defaultSnapProps) {
   const validSnapPoints = snapPoints.filter(point => Number.isFinite(point))
   return validSnapPoints.length > 0 ? Math.min(...validSnapPoints) : 0
 }
+
+/**
+ * Default snap points function that returns minimum content height.
+ * 
+ * Provides a single snap point based on content dimensions when no custom
+ * snap points are specified. Ensures the sheet has at least minimal height.
+ * 
+ * @param config - Object containing layout measurements
+ * @param config.minHeight - Minimum height needed to display content without overflow
+ * 
+ * @returns Minimum height snap point in pixels, or 0 if invalid
+ * 
+ * @complexity O(1) - Simple validation and return
+ * @callFlow
+ * - Validates minHeight is finite number
+ * - Returns minHeight or 0 as fallback
+ */
 function _snapPoints({ minHeight }: SnapPointProps) {
   return Number.isFinite(minHeight) ? minHeight : 0
 }

@@ -10,6 +10,42 @@ export type {
   SpringConfig as BottomSheetSpringConfig,
 } from './types'
 
+/**
+ * Main BottomSheet component entry point with SSR support and lifecycle management.
+ * 
+ * This wrapper component handles server-side rendering compatibility, manages mounting
+ * state to prevent hydration mismatches, and controls the initial animation state.
+ * It provides a clean API while delegating core functionality to the internal BottomSheet.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * import { BottomSheet } from 'react-spring-bottom-sheet'
+ * 
+ * <BottomSheet
+ *   open={isOpen}
+ *   onDismiss={() => setIsOpen(false)}
+ *   snapPoints={({ maxHeight }) => [maxHeight * 0.4, maxHeight * 0.8]}
+ * >
+ *   <div>Content here</div>
+ * </BottomSheet>
+ * ```
+ * 
+ * @param props - All BottomSheet props
+ * @param props.onSpringStart - Optional callback for animation start events
+ * @param props.onSpringEnd - Optional callback for animation end events  
+ * @param props.skipInitialTransition - Skip opening animation on mount
+ * @param ref - Forward ref for imperative API access
+ * 
+ * @returns Portal-wrapped BottomSheet or null if not mounted (SSR compatibility)
+ * 
+ * @complexity O(1) - Constant time wrapper operations
+ * @callFlow
+ * - Manages mounted state for SSR compatibility
+ * - Handles initial state determination based on props
+ * - Forwards events to user callbacks
+ * - Renders internal BottomSheet in Portal when mounted
+ */
 // Because SSR is annoying to deal with, and all the million complaints about window, navigator and dom elenents!
 export const BottomSheet = forwardRef<RefHandles, Props>((
   { onSpringStart, onSpringEnd, skipInitialTransition, ...props },
@@ -45,6 +81,24 @@ export const BottomSheet = forwardRef<RefHandles, Props>((
     }
   }, [props.open])
 
+  /**
+   * Handles spring animation start events and manages mounting lifecycle.
+   * 
+   * This callback processes animation start events, forwards them to user callbacks,
+   * and ensures proper mounting behavior during open animations. It prevents race
+   * conditions between opening and pending unmount operations.
+   * 
+   * @param event - Spring event object describing the animation type
+   * @param event.type - Type of animation ('OPEN' | 'CLOSE' | 'SNAP' | 'RESIZE')
+   * 
+   * @returns Promise that resolves when user callback completes
+   * 
+   * @complexity O(1) - Simple event forwarding and cleanup
+   * @callFlow
+   * - Forwards event to user onSpringStart callback
+   * - Cancels pending unmount timer for OPEN events
+   * - Prevents race conditions during open animations
+   */
   const handleSpringStart = useCallback(
     async (event: SpringEvent) => {
       // Forward the event
@@ -60,6 +114,24 @@ export const BottomSheet = forwardRef<RefHandles, Props>((
     [onSpringStart]
   )
 
+  /**
+   * Handles spring animation end events and manages unmounting lifecycle.
+   * 
+   * This callback processes animation end events, forwards them to user callbacks,
+   * and manages DOM cleanup for accessibility. When close animations complete,
+   * it schedules unmounting to prevent tab navigation and screen reader access.
+   * 
+   * @param event - Spring event object describing the completed animation
+   * @param event.type - Type of animation ('OPEN' | 'CLOSE' | 'SNAP' | 'RESIZE')
+   * 
+   * @returns Promise that resolves when user callback completes
+   * 
+   * @complexity O(1) - Simple event forwarding and scheduling
+   * @callFlow
+   * - Forwards event to user onSpringEnd callback
+   * - Schedules unmounting via requestAnimationFrame for CLOSE events
+   * - Improves accessibility by removing closed sheet from DOM
+   */
   const handleSpringEnd = useCallback(
     async (event: SpringEvent) => {
       // Forward the event
