@@ -1,3 +1,10 @@
+# [4.0.0-beta.10](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.9...v4.0.0-beta.10) (2025-07-15)
+
+
+### Bug Fixes
+
+* implement adaptive close threshold for mobile swipe-to-close ([c4eee81](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/c4eee812a838bf6e105b43abbb966d549258e4ab))
+
 # [4.0.0-beta.9](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.8...v4.0.0-beta.9) (2025-07-12)
 
 
