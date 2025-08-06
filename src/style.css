@@ -6,7 +6,8 @@
   flex-direction: column;
   height: var(--rsbs-overlay-h);
   transform: translate3d(0, var(--rsbs-overlay-translate-y), 0);
-  will-change: height;
+  will-change: height, transform;
+  overscroll-behavior-y: contain;
 }
 [data-rsbs-overlay]:focus {
   outline: none;

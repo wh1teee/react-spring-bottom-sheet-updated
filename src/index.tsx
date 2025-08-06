@@ -1,3 +1,5 @@
+'use client'
+
 import { Root as PortalRoot } from '@radix-ui/react-portal';
 import React, { forwardRef, useRef, useState, useCallback } from 'react'
 import { BottomSheet as _BottomSheet } from './BottomSheet'

@@ -8,13 +8,9 @@ const importFrom = resolve(__dirname, './defaults.json')
 export default {
   plugins: {
     tailwindcss: {},
-    'postcss-custom-properties-fallback': { importFrom },
     'postcss-preset-env': { 
       importFrom, 
       stage: 2, // Balance between modern features and broad compatibility
-      features: {
-        'custom-properties': false, // Let fallback plugin handle this
-      },
     },
     'postcss-inline-svg': {
       paths: [resolve(__dirname, 'docs')],

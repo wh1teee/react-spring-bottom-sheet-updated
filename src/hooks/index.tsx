@@ -1,4 +1,5 @@
 export { useAriaHider } from './useAriaHider'
+export { useInert } from './useInert'
 export { useFocusTrap } from './useFocusTrap'
 export { useLayoutEffect } from './useLayoutEffect'
 export { useReady } from './useReady'

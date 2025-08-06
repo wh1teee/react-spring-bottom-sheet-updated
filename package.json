@@ -16,12 +16,20 @@
     "defaults.json",
     "dist"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./style.css": "./dist/style.css"
+  },
   "scripts": {
     "build": "next build",
-    "build:declarations": "tsc --project tsconfig.declarations.json",
     "prebuild:dist": "rimraf dist/**",
-    "build:dist": "npm run build:postcss && npm run build:microbundle && npm run build:declarations",
-    "build:microbundle": "NODE_ENV=production microbundle --define process.env.NODE_ENV=production --tsconfig tsconfig.microbundle.json -f cjs,es,modern --css-modules false --external react --globals react=React --jsx React.createElement --jsxFragment React.Fragment --no-sourcemap",
+    "build:dist": "npm run build:postcss && npm run build:lib",
+    "build:lib": "tsup",
     "build:postcss": "postcss -d dist src/style.css",
     "dev": "next dev",
     "turbo": "next dev --turbopack",
@@ -31,7 +39,10 @@
     "prebuild": "npm run lint && npm run type-check",
     "prepublishOnly": "npm run build:dist",
     "start": "next start",
-    "test": "npm run prepublishOnly && npm run build"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage --watchAll=false"
   },
   "sideEffects": [
     "*.css"
@@ -41,62 +52,69 @@
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^7.1.2",
+    "@mui/icons-material": "^7.2.0",
     "@mui/material": "^7.2.0",
-    "@mui/material-nextjs": "^7.1.1",
+    "@mui/material-nextjs": "^7.2.0",
     "@radix-ui/react-portal": "^1.1.9",
     "@react-spring/web": "^10.0.1",
     "@use-gesture/react": "^10.3.1",
     "@xstate/react": "^5.0.5",
     "focus-trap": "^7.6.5",
     "svgo": "3.3.2",
-    "xstate": "^5.19.4"
+    "xstate": "^5.20.1"
   },
   "peerDependencies": {
-    "react": "^16.14.0 || 17 || 18 || 19"
+    "react": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.27.4",
+    "@babel/core": "^7.28.0",
     "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.29.0",
+    "@eslint/js": "^9.32.0",
+    "@jest/globals": "^30.0.4",
     "@rooks/use-raf": "^4.11.2",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@tailwindcss/forms": "^0.5.10",
-    "@types/node": "^22.15.32",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^22.17.0",
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
     "@use-it/interval": "^1.0.0",
     "@xstate/inspect": "^0.8.0",
+    "@xstate/test": "^0.5.1",
     "classnames": "^2.5.1",
-    "eslint": "^9.29.0",
-    "eslint-config-next": "^15.3.3",
-    "eslint-config-prettier": "^10.1.5",
+    "eslint": "^9.32.0",
+    "eslint-config-next": "^15.4.5",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsx-a11y": "^6.10.2",
-    "eslint-plugin-prettier": "^5.5.0",
+    "eslint-plugin-prettier": "^5.5.3",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-unused-imports": "^4.1.4",
-    "globals": "^16.2.0",
+    "globals": "^16.3.0",
     "husky": "^8.0.3",
+    "jest": "^30.0.5",
+    "jest-environment-jsdom": "^30.0.5",
     "lint-staged": "^13.3.0",
-    "microbundle": "^0.15.1",
-    "next": "^15.3.3",
+    "tsup": "^8.3.5",
+    "next": "^15.4.5",
     "postcss": "^8.5.6",
     "postcss-cli": "^11.0.1",
-    "postcss-custom-properties-fallback": "^1.0.2",
     "postcss-inline-svg": "^6.0.0",
-    "postcss-preset-env": "^10.2.3",
-    "prettier": "^3.5.3",
+    "postcss-preset-env": "^10.2.4",
+    "prettier": "^3.6.2",
     "prettier-package-json": "^2.8.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
     "rimraf": "^5.0.10",
     "semantic-release": "^21.1.2",
     "smooth-scroll-into-view-if-needed": "^2.0.2",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.34.1"
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.38.0"
   },
   "keywords": [
     "animation",
@@ -119,12 +137,9 @@
     "typescript"
   ],
   "browserslist": [
-    "Chrome >= 49",
-    "Android >= 58",
-    "Safari >= 9.1",
-    "iOS >= 9.3",
-    "Firefox >= 31",
-    "Edge >= 16"
+    "> 0.5%",
+    "not dead",
+    "not op_mini all"
   ],
   "husky": {
     "hooks": {

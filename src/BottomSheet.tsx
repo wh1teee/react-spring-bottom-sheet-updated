@@ -20,7 +20,7 @@ import React, {
 import { animated, config } from '@react-spring/web'
 import { rubberbandIfOutOfBounds, useDrag } from '@use-gesture/react'
 import {
-  useAriaHider,
+  useInert,
   useFocusTrap,
   useLayoutEffect,
   useReady,
@@ -178,7 +178,7 @@ export const BottomSheet = forwardRef<
     enabled: ready && scrollLocking,
     reserveScrollBarGap,
   })
-  const ariaHiderRef = useAriaHider({
+  const inertRef = useInert({
     targetRef: containerRef as React.RefObject<Element>,
     enabled: ready && blocking,
   })
@@ -343,13 +343,13 @@ export const BottomSheet = forwardRef<
         await Promise.all([
           scrollLockRef.current.activate(),
           focusTrapRef.current.activate(),
-          ariaHiderRef.current.activate(),
+          inertRef.current.activate(),
         ])
       }),
       deactivate: fromPromise(async () => {
         scrollLockRef.current.deactivate()
         focusTrapRef.current.deactivate()
-        ariaHiderRef.current.deactivate()
+        inertRef.current.deactivate()
         canDragRef.current = false
       }),
       openImmediately: fromPromise(async () => {
@@ -469,9 +469,9 @@ export const BottomSheet = forwardRef<
       
       scrollLockRef.current.deactivate()
       focusTrapRef.current.deactivate()
-      ariaHiderRef.current.deactivate()
+      inertRef.current.deactivate()
     },
-    [set, ariaHiderRef, focusTrapRef, scrollLockRef]
+    [set, inertRef, focusTrapRef, scrollLockRef]
   )
 
   useImperativeHandle(

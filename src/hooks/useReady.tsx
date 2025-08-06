@@ -1,35 +1,49 @@
 'use client'
-// Keeps track of wether everything is good to go or not, in the most efficient way possible
+// Keeps track of whether everything is good to go or not, in the most efficient way possible
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
+/**
+ * Hook for managing multiple asynchronous ready states efficiently.
+ * 
+ * Uses a Map internally for O(1) operations instead of object spread,
+ * and only triggers state updates when all registered items are ready.
+ * This avoids unnecessary re-renders during the registration phase.
+ * 
+ * @returns {ready: boolean, registerReady: (key: string) => () => void}
+ */
 export function useReady() {
   const [ready, setReady] = useState(false)
-  const [readyMap, updateReadyMap] = useState<Record<string, boolean>>({})
+  const readyMapRef = useRef(new Map<string, boolean>())
+  const [updateTrigger, setUpdateTrigger] = useState(0)
 
   const registerReady = useCallback((key: string) => {
     // Register the check we're gonna wait for until it's ready
-    updateReadyMap((ready) => ({ ...ready, [key]: false }))
-
+    readyMapRef.current.set(key, false)
+    
     return () => {
-      // Set it to ready
-      updateReadyMap((ready) => ({ ...ready, [key]: true }))
+      // Set it to ready and trigger an update
+      readyMapRef.current.set(key, true)
+      setUpdateTrigger((prev) => prev + 1)
     }
   }, [])
 
   useEffect(() => {
-    const states = Object.values(readyMap)
-
-    if (states.length === 0) {
+    const map = readyMapRef.current
+    
+    if (map.size === 0) {
       // No ready checks registered yet
       return
     }
 
-    const isReady = states.every(Boolean)
-    if (isReady) {
+    // Check if all registered items are ready
+    const isReady = Array.from(map.values()).every(Boolean)
+    
+    // Only update if the ready state has changed to true
+    if (isReady && !ready) {
       setReady(true)
     }
-  }, [readyMap])
+  }, [updateTrigger, ready])
 
   return { ready, registerReady }
 }
