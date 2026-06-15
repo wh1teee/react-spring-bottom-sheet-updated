@@ -10,6 +10,20 @@
 
 > ⚡ This is an updated and modernized fork of the original react-spring-bottom-sheet, featuring the latest dependencies, enhanced performance optimizations, improved memory leak prevention, and full React 19 compatibility.
 
+## Why this fork exists
+
+The original `react-spring-bottom-sheet` is a well-known accessible
+bottom-sheet library, but it has not seen active upstream maintenance
+for several years. This fork keeps the component usable for modern
+React and Next applications by maintaining React 19 compatibility,
+modern dependencies, TypeScript support, focus/scroll-lock fixes,
+gesture behavior, and production release workflows.
+
+The goal is to preserve the original API and interaction model while
+improving maintainability, bundle size, accessibility coverage, and
+compatibility with nested scrollable content such as sliders,
+carousels, maps, and horizontally scrolling elements.
+
 # What's New in 4.0.0
 
 ## 🚀 Major Updates & Improvements
@@ -285,7 +299,7 @@ Allows you to customize the React Spring animation configuration for fine-tuned 
 The configuration affects all animations including opening, closing, snapping to different heights, and responding to drag gestures.
 
 ```jsx
-import { BottomSheet, BottomSheetSpringConfig } from 'react-spring-bottom-sheet'
+import { BottomSheet, BottomSheetSpringConfig } from 'react-spring-bottom-sheet-updated'
 
 // Bouncy animation
 const bouncy: BottomSheetSpringConfig = {
