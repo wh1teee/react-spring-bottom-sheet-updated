@@ -77,6 +77,21 @@ npm i react-spring-bottom-sheet-updated
 yarn add react-spring-bottom-sheet-updated
 ```
 
+# Bundle size
+
+Bundle size is tracked in CI via a custom check (`scripts/check-bundle-size.mjs`) that enforces a gzipped-size budget per build format. The current baseline (gzipped, after `pnpm build:dist`) is:
+
+| Format           | Gzipped size |
+|------------------|--------------|
+| `index.modern.js` | ~50 kB       |
+| `index.es.js`    | ~51 kB       |
+| `index.cjs`      | ~51 kB       |
+
+One of the main roadmap items is replacing the XState-based overlay
+state machine with a smaller typed FSM while preserving behavior
+through regression tests. The CI gate makes that refactor safe to
+attempt: any unintended size regression will fail the build.
+
 # Getting started
 
 ## Basic usage
