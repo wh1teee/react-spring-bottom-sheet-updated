@@ -44,9 +44,9 @@ export default function StickyNugget({
       <div>
         <div className="grid grid-flow-row place-items-start gap-2.5 sticky top-5 mb-5">
           <h2 className={cx('text-5xl font-display', text)}>{heading}</h2>
-          {[].concat(lead).map((lead, i) => (
+          {(Array.isArray(lead) ? lead : [lead]).map((leadItem, i) => (
             <p key={`lead-${i}`} className="text-2xl px-0.5">
-              {lead}
+              {leadItem}
             </p>
           ))}
 

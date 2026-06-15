@@ -61,6 +61,7 @@
   flex-shrink: 0;
   cursor: ns-resize;
   padding: 16px;
+  touch-action: none;
 }
 [data-rsbs-header] {
   text-align: center;
@@ -103,6 +104,7 @@
   overflow: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 [data-rsbs-scroll]:focus {
   outline: none;

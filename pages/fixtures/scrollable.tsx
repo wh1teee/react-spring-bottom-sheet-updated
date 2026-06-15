@@ -11,7 +11,7 @@ import SheetContent from '../../docs/fixtures/SheetContent'
 import SnapMarker from '../../docs/fixtures/SnapMarker'
 import { scrollable } from '../../docs/headings'
 import MetaTags from '../../docs/MetaTags'
-import { BottomSheet, BottomSheetRef } from '../../src'
+import { BottomSheet, type BottomSheetRef } from '../../src'
 import type { GetStaticProps } from '../_app'
 
 export { getStaticProps } from '../_app'
@@ -56,8 +56,8 @@ const ScrollableFixturePage: NextPage<GetStaticProps> = ({
   name,
 }) => {
   const [expandOnContentDrag, setExpandOnContentDrag] = useState(true)
-  const focusRef = useRef<HTMLButtonElement>()
-  const sheetRef = useRef<BottomSheetRef>()
+  const buttonFocusRef = useRef<HTMLButtonElement>(null)
+  const sheetRef = useRef<BottomSheetRef>(null)
 
   return (
     <>
@@ -89,7 +89,7 @@ const ScrollableFixturePage: NextPage<GetStaticProps> = ({
           skipInitialTransition
           sibling={<CloseExample className="z-10" />}
           ref={sheetRef}
-          initialFocusRef={focusRef}
+          initialFocusRef={buttonFocusRef as React.RefObject<HTMLElement>}
           defaultSnap={({ maxHeight }) => maxHeight / 2}
           snapPoints={({ maxHeight }) => [
             maxHeight - maxHeight / 10,
@@ -105,23 +105,27 @@ const ScrollableFixturePage: NextPage<GetStaticProps> = ({
                   ' text-sm px2 py-1',
                   { 'text-xl': false, 'px-7': false, 'py-3': false },
                 ]}
-                onClick={() =>
-                  sheetRef.current.snapTo(({ snapPoints }) =>
-                    Math.max(...snapPoints)
-                  )
-                }
+                onClick={() => {
+                  if (sheetRef.current) {
+                    sheetRef.current.snapTo(({ snapPoints }) =>
+                      Math.max(...snapPoints)
+                    )
+                  }
+                }}
               >
                 Top
               </Button>
               <Button
-                ref={focusRef}
+                ref={buttonFocusRef}
                 className={[
                   ' text-sm px2 py-1',
                   { 'text-xl': false, 'px-7': false, 'py-3': false },
                 ]}
-                onClick={() =>
-                  sheetRef.current.snapTo(({ maxHeight }) => maxHeight / 2)
-                }
+                onClick={() => {
+                  if (sheetRef.current) {
+                    sheetRef.current.snapTo(({ maxHeight }) => maxHeight / 2)
+                  }
+                }}
               >
                 Middle
               </Button>
@@ -130,11 +134,13 @@ const ScrollableFixturePage: NextPage<GetStaticProps> = ({
                   ' text-sm px2 py-1',
                   { 'text-xl': false, 'px-7': false, 'py-3': false },
                 ]}
-                onClick={() =>
-                  sheetRef.current.snapTo(({ snapPoints }) =>
-                    Math.min(...snapPoints)
-                  )
-                }
+                onClick={() => {
+                  if (sheetRef.current) {
+                    sheetRef.current.snapTo(({ snapPoints }) =>
+                      Math.min(...snapPoints)
+                    )
+                  }
+                }}
               >
                 Bottom
               </Button>
@@ -167,8 +173,10 @@ const ScrollableFixturePage: NextPage<GetStaticProps> = ({
             <ScrollUp
               className="my-6"
               onClick={async () => {
-                await scrollIntoView(focusRef.current, { block: 'end' })
-                focusRef.current.focus()
+                if (buttonFocusRef.current) {
+                  await scrollIntoView(buttonFocusRef.current, { block: 'end' })
+                  buttonFocusRef.current.focus()
+                }
               }}
             />
           </SheetContent>

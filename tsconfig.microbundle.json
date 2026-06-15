@@ -1,8 +1,13 @@
 {
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
+    "target": "ES2018",
     "module": "ESNext",
-    "target": "ESNext",
-    "declaration": false
-  }
+    "lib": ["ES2018", "DOM"],
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "jsx": "preserve",
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"]
 }

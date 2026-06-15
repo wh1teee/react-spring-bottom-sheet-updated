@@ -1,3 +1,170 @@
+# [4.0.0-beta.10](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.9...v4.0.0-beta.10) (2025-07-15)
+
+
+### Bug Fixes
+
+* implement adaptive close threshold for mobile swipe-to-close ([c4eee81](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/c4eee812a838bf6e105b43abbb966d549258e4ab))
+
+# [4.0.0-beta.9](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.8...v4.0.0-beta.9) (2025-07-12)
+
+
+### Bug Fixes
+
+* improve lastSnapRef handling and prevent scroll lock conflicts ([dc9567a](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/dc9567a78abbf12ddd1f5df13cf08bb63db602f1))
+
+# [4.0.0-beta.8](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.7...v4.0.0-beta.8) (2025-07-01)
+
+
+### Bug Fixes
+
+* ensure proper cleanup of iOS body styles after scroll unlock ([cd5ac7b](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/cd5ac7bee7e68b6f76c105f5717e0d1182de90d3))
+
+# [4.0.0-beta.7](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.6...v4.0.0-beta.7) (2025-07-01)
+
+
+### Bug Fixes
+
+* trigger beta release after tag cleanup ([99d0671](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/99d06710cf08474164c0ddcc960153fa4e450154))
+* trigger new beta release ([c619dd5](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/c619dd52b5a6bfb4188148aea9687683d40656e9))
+
+
+### Features
+
+* add manual trigger to prerelease workflow ([632aa91](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/632aa91451a17ed6f544d2d1e931ffffef7424d5))
+
+# [4.0.0-beta.7](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.6...v4.0.0-beta.7) (2025-07-01)
+
+
+### Bug Fixes
+
+* trigger new beta release ([c619dd5](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/c619dd52b5a6bfb4188148aea9687683d40656e9))
+
+
+### Features
+
+* add manual trigger to prerelease workflow ([632aa91](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/632aa91451a17ed6f544d2d1e931ffffef7424d5))
+
+# [4.0.0-beta.6](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.5...v4.0.0-beta.6) (2025-07-01)
+
+
+### Bug Fixes
+
+* critical focus trap bug with false value ([8a2792e](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/8a2792e82eb85cd83697bf405541735ff0a0cf82))
+* implement intelligent scroll lock conflict resolution ([1f5a1f7](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/1f5a1f7aa2aa041e0bdb500793a867abfcdee30b))
+* improve problematic scroll lock behavior reproduction ([22bf643](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/22bf64398c26dc90dff16f89dfe456a7a2f9cc42))
+* move controls inside modal overlays for proper accessibility ([1690895](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/1690895bd2caeb8f00ec5e137e40750966b93149))
+* remove unused [@ts-expect-error](https://github.com/ts-expect-error) directive causing build failure ([0e681a3](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/0e681a3a3d1aca091a13e6d5c54620cd3e6011d8))
+* resolve all linter errors for GitHub Actions ([0e4204e](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/0e4204e294dfa45d867d51d6b54d12528a9335a1))
+* resolve iOS animation, type safety, and heuristic detection bugs ([552572b](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/552572b1a2521ec936fb74c3bcf2d147d08a110f))
+* resolve scroll lock conflicts with external libraries ([a2d8057](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/a2d80570a617336f3baab35db1071ccd826dc38e))
+
+
+### Features
+
+* add Material UI v7.2 integration and scroll lock conflict demo ([a4dfe29](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/a4dfe293b502cdfd835039410bacfd812333a4e4))
+
+# [4.0.0-beta.6](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.5...v4.0.0-beta.6) (2025-07-01)
+
+
+### Bug Fixes
+
+* critical focus trap bug with false value ([8a2792e](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/8a2792e82eb85cd83697bf405541735ff0a0cf82))
+* implement intelligent scroll lock conflict resolution ([1f5a1f7](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/1f5a1f7aa2aa041e0bdb500793a867abfcdee30b))
+* improve problematic scroll lock behavior reproduction ([22bf643](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/22bf64398c26dc90dff16f89dfe456a7a2f9cc42))
+* move controls inside modal overlays for proper accessibility ([1690895](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/1690895bd2caeb8f00ec5e137e40750966b93149))
+* remove unused [@ts-expect-error](https://github.com/ts-expect-error) directive causing build failure ([0e681a3](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/0e681a3a3d1aca091a13e6d5c54620cd3e6011d8))
+* resolve all linter errors for GitHub Actions ([0e4204e](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/0e4204e294dfa45d867d51d6b54d12528a9335a1))
+* resolve iOS animation, type safety, and heuristic detection bugs ([552572b](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/552572b1a2521ec936fb74c3bcf2d147d08a110f))
+* resolve scroll lock conflicts with external libraries ([a2d8057](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/a2d80570a617336f3baab35db1071ccd826dc38e))
+
+
+### Features
+
+* add Material UI v7.2 integration and scroll lock conflict demo ([a4dfe29](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/a4dfe293b502cdfd835039410bacfd812333a4e4))
+
+# [4.0.0-beta.6](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.5...v4.0.0-beta.6) (2025-07-01)
+
+
+### Bug Fixes
+
+* resolve scroll lock conflicts with external libraries ([a2d8057](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/a2d80570a617336f3baab35db1071ccd826dc38e))
+
+# [4.0.0-beta.5](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.4...v4.0.0-beta.5) (2025-06-30)
+
+
+### Bug Fixes
+
+* resolve remaining TypeScript error and streamline CI ([6024f3e](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/6024f3e2d37114f7e06186dfdcfc7a0a84167001))
+* resolve TypeScript errors and simplify CI pipeline ([8a8645e](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/8a8645e7f8e14eb2ae0d2b186fcadf011b38079c))
+
+
+### Features
+
+* modernize release pipeline with comprehensive semantic-release config ([1ff9ac4](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/1ff9ac4bcd567d99740c547a84c15a47ee2e001c))
+
+
+### BREAKING CHANGES
+
+* Release configuration now requires all standard semantic-release plugins
+
+# [4.0.0-beta.4](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.3...v4.0.0-beta.4) (2025-06-20)
+
+
+### Bug Fixes
+
+* cleanup timeout handling in BottomSheet unmount logic ([924b5a8](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/924b5a85a48873ca9807b0bd7d59bd414207d272))
+* clear timeout on tap dismiss in BottomSheet to prevent potential memory leaks ([94ec6f7](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/94ec6f7583c8a82a099d34c0ddddd92c2d04724a))
+
+# [4.0.0-beta.3](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.2...v4.0.0-beta.3) (2025-06-20)
+
+
+### Bug Fixes
+
+* react 'use client' ([3cecdd5](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/3cecdd586a726d0cb22c7a2961984f2a7526257b))
+
+# [4.0.0-beta.2](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v4.0.0-beta.1...v4.0.0-beta.2) (2025-06-19)
+
+
+### Bug Fixes
+
+* add permissions to GitHub Actions workflow for PR comments ([c1504b6](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/c1504b60d5e854d5b56b7d3223174442d04c3f2b))
+* react unexist on build ([cc30086](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/cc3008648c14bff85bb7becf8829694c98070d89))
+* resolve React import issues and update GitHub Actions - Add React import to BottomSheet.tsx for React.RefObject types - Fix microbundle configuration for proper JSX handling - Update pnpm version in all GitHub Actions workflows to latest - Regenerate pnpm-lock.yaml for compatibility - Configure tsconfig.microbundle.json for isolated builds ([f1391a2](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/f1391a2e092c1dd303bb147806b42de60c1ee7e6))
+
+# [4.0.0-beta.1](https://github.com/wh1teee/react-spring-bottom-sheet-updated/compare/v3.4.1...v4.0.0-beta.1) (2025-06-19)
+
+
+### Bug Fixes
+
+* add missing packages field to pnpm workspace configuration ([4a4ba7d](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/4a4ba7d3996bf1c2667134302322d37f0d46c0c8))
+* can be clicked through the overlay on IOS ([b9a2d95](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/b9a2d959c12168f5b8b073391504bbbee2168543))
+* change semantic-release config to CommonJS format (.cjs extension) for compatibility with semantic-release-action ([868dabf](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/868dabf9d628061bea14eb6e0be2f1b1b7e25a3b))
+* sheet did not close when drag event ([f427c44](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/f427c44a63367dc337d149100b551a3e0a5466ce))
+* use --no-frozen-lockfile to resolve CI lockfile compatibility issues ([7ea2e80](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/7ea2e804c2d6d5624e7de6d42e096be8373e7c3c))
+
+
+* feat!: major update ([dd286ca](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/dd286ca9b68e4cb5f112ff50f011f6e4c3746d99))
+
+
+### Features
+
+* add springConfig prop for custom React Spring configuration ([3f8b4eb](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/3f8b4eba7bfe0401bacf14571540fc01a06a35a0))
+* modernize dependencies for 2025 standards - SVGO 1.3.2→3.3.2, react-spring→@react-spring/web, remove body-scroll-lock+@juggle/resize-observer, update PostCSS, fix SVGO compatibility issues ([5a18052](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/5a180525a2ff44e29d4b20cc620a5d4da05382f6))
+* version 4.0.0 major release with breaking changes ([e06a4bc](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/e06a4bc2b62a10b082634e46ab6e910c83a39059))
+
+
+### Performance Improvements
+
+* optimize defaultSpringConfig by moving it outside component ([7439a6d](https://github.com/wh1teee/react-spring-bottom-sheet-updated/commit/7439a6d5e73c7aaff92e1ecc79feb73b3259857e))
+
+
+### BREAKING CHANGES
+
+* - Modern React 19 support
+- Updated dependencies and build tools
+- Rebranded as react-spring-bottom-sheet-updated
+- Enhanced TypeScript definitions
+
 ## [3.4.1](https://github.com/stipsan/react-spring-bottom-sheet/compare/v3.4.0...v3.4.1) (2022-06-01)
 
 

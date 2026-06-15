@@ -1,12 +1,68 @@
-[![npm stat](https://img.shields.io/npm/dm/react-spring-bottom-sheet.svg?style=flat-square)](https://npm-stat.com/charts.html?package=react-spring-bottom-sheet)
-[![npm version](https://img.shields.io/npm/v/react-spring-bottom-sheet.svg?style=flat-square)](https://www.npmjs.com/package/react-spring-bottom-sheet)
+[![npm stat](https://img.shields.io/npm/dm/react-spring-bottom-sheet-updated.svg?style=flat-square)](https://npm-stat.com/charts.html?package=react-spring-bottom-sheet-updated)
+[![npm version](https://img.shields.io/npm/v/react-spring-bottom-sheet-updated.svg?style=flat-square)](https://www.npmjs.com/package/react-spring-bottom-sheet-updated)
 [![gzip size][gzip-badge]][unpkg-dist]
 [![size][size-badge]][unpkg-dist]
 [![module formats: cjs, es, and modern][module-formats-badge]][unpkg-dist]
 
-![Logo with the text Accessible, Delightful and Performant](https://react-spring-bottom-sheet.cocody.dev/readme.svg)
+![Logo with the text Accessible, Delightful and Performant](https://github.com/wh1teee/react-spring-bottom-sheet-updated/blob/main/public/readme.svg)
 
-**react-spring-bottom-sheet** is built on top of **[react-spring]** and **[react-use-gesture]**. It busts the myth that accessibility and supporting keyboard navigation and screen readers are allegedly at odds with delightful, beautiful, and highly animated UIs. Every animation and transition use CSS custom properties instead of manipulating them directly, allowing complete control over the experience from CSS alone.
+**react-spring-bottom-sheet-updated** is built on top of **[react-spring]** and **[@use-gesture/react]**. It busts the myth that accessibility and supporting keyboard navigation and screen readers are allegedly at odds with delightful, beautiful, and highly animated UIs. Every animation and transition use CSS custom properties instead of manipulating them directly, allowing complete control over the experience from CSS alone.
+
+> ⚡ This is an updated and modernized fork of the original react-spring-bottom-sheet, featuring the latest dependencies, enhanced performance optimizations, improved memory leak prevention, and full React 19 compatibility.
+
+## Why this fork exists
+
+The original `react-spring-bottom-sheet` is a well-known accessible
+bottom-sheet library, but it has not seen active upstream maintenance
+for several years. This fork keeps the component usable for modern
+React and Next applications by maintaining React 19 compatibility,
+modern dependencies, TypeScript support, focus/scroll-lock fixes,
+gesture behavior, and production release workflows.
+
+The goal is to preserve the original API and interaction model while
+improving maintainability, bundle size, accessibility coverage, and
+compatibility with nested scrollable content such as sliders,
+carousels, maps, and horizontally scrolling elements.
+
+# What's New in 4.0.0
+
+## 🚀 Major Updates & Improvements
+
+- **React 19 Support**: Full compatibility with React 19 including proper ref forwarding and effect timing
+- **Memory Leak Prevention**: Enhanced cleanup logic prevents timeout-related memory leaks 
+- **Modern Dependencies**: Updated to latest versions (XState 5, @react-spring/web 10, @use-gesture/react 10)
+- **Improved Performance**: Optimized spring configuration and reduced re-renders
+- **Better TypeScript**: Enhanced type definitions and stricter type checking
+- **ESLint 9 Support**: Migrated to modern ESLint flat config format
+- **Enhanced Focus Management**: Better integration with portal-rendered components
+
+## 🔧 Breaking Changes from 3.x
+
+- Minimum React version is now 16.14.0 (React 18+ recommended)
+- Some internal APIs have changed (affects only advanced customizations)
+- CSS custom properties structure remains the same for easy migration
+
+## 📦 Migration from react-spring-bottom-sheet
+
+```bash
+# Remove old package
+npm uninstall react-spring-bottom-sheet
+
+# Install updated version
+npm install react-spring-bottom-sheet-updated
+```
+
+```tsx
+// Update imports
+- import { BottomSheet } from 'react-spring-bottom-sheet'
++ import { BottomSheet } from 'react-spring-bottom-sheet-updated'
+
+// CSS imports  
+- import 'react-spring-bottom-sheet/dist/style.css'
++ import 'react-spring-bottom-sheet-updated/dist/style.css'
+```
+
+All component APIs remain the same - no code changes needed beyond import updates!
 
 # Installation
 
@@ -21,17 +77,32 @@ npm i react-spring-bottom-sheet-updated
 yarn add react-spring-bottom-sheet-updated
 ```
 
+# Bundle size
+
+Bundle size is tracked in CI via a custom check (`scripts/check-bundle-size.mjs`) that enforces a gzipped-size budget per build format. The current baseline (gzipped, after `pnpm build:dist`) is:
+
+| Format           | Gzipped size |
+|------------------|--------------|
+| `index.modern.js` | ~50 kB       |
+| `index.es.js`    | ~51 kB       |
+| `index.cjs`      | ~51 kB       |
+
+One of the main roadmap items is replacing the XState-based overlay
+state machine with a smaller typed FSM while preserving behavior
+through regression tests. The CI gate makes that refactor safe to
+attempt: any unintended size regression will fail the build.
+
 # Getting started
 
 ## Basic usage
 
 ```jsx
 import { useState } from 'react'
-import { BottomSheet } from 'react-spring-bottom-sheet'
+import { BottomSheet } from 'react-spring-bottom-sheet-updated'
 
 // if setting up the CSS is tricky, you can add this to your page somewhere:
-// <link rel="stylesheet" href="https://unpkg.com/react-spring-bottom-sheet/dist/style.css" crossorigin="anonymous">
-import 'react-spring-bottom-sheet/dist/style.css'
+// <link rel="stylesheet" href="https://unpkg.com/react-spring-bottom-sheet-updated/dist/style.css" crossorigin="anonymous">
+import 'react-spring-bottom-sheet-updated/dist/style.css'
 
 export default function Example() {
   const [open, setOpen] = useState(false)
@@ -50,7 +121,7 @@ TS support is baked in, and if you're using the `snapTo` API use `BottomSheetRef
 
 ```tsx
 import { useRef } from 'react'
-import { BottomSheet, BottomSheetRef } from 'react-spring-bottom-sheet'
+import { BottomSheet, BottomSheetRef } from 'react-spring-bottom-sheet-updated'
 
 export default function Example() {
   const sheetRef = useRef<BottomSheetRef>()
@@ -96,34 +167,34 @@ module.exports = {
   plugins: {
     // Ensures the default variables are available
     'postcss-custom-properties-fallback': {
-      importFrom: require.resolve('react-spring-bottom-sheet/defaults.json'),
+      importFrom: require.resolve('react-spring-bottom-sheet-updated/defaults.json'),
     },
   },
 }
 ```
 
 
-# [Demos](https://react-spring-bottom-sheet.cocody.dev/)
+# [Live Demos](https://github.com/wh1teee/react-spring-bottom-sheet-updated#demos)
 
-## [Basic](https://react-spring-bottom-sheet.cocody.dev/fixtures/simple)
+## [Basic](https://github.com/wh1teee/react-spring-bottom-sheet-updated/blob/main/pages/fixtures/simple.tsx)
 
 > [View demo code](/pages/fixtures/simple.tsx#L44-L48)
 
 MVP example, showing what you get by implementing `open`, `onDismiss` and a single **snap point** always set to `minHeight`.
 
-## [Snap points & overflow](https://react-spring-bottom-sheet.cocody.dev/fixtures/scrollable)
+## [Snap points & overflow](https://github.com/wh1teee/react-spring-bottom-sheet-updated/blob/main/pages/fixtures/scrollable.tsx)
 
 > [View demo code](/pages/fixtures/scrollable.tsx#L86-L97)
 
 A more elaborate example that showcases how snap points work. It also shows how it behaves if you want it to be open by default, and not closable. Notice how it responds if you resize the window, or scroll to the bottom and starts adjusting the height of the sheet without scrolling back up first.
 
-## [Sticky header & footer](https://react-spring-bottom-sheet.cocody.dev/fixtures/sticky)
+## [Sticky header & footer](https://github.com/wh1teee/react-spring-bottom-sheet-updated/blob/main/pages/fixtures/sticky.tsx)
 
 > [View demo code](/pages/fixtures/sticky.tsx#L41-L61)
 
 If you provide either a `header` or `footer` prop you'll enable the special behavior seen in this example. And they're not just sticky positioned, both areas support touch gestures.
 
-## [Non-blocking overlay mode](https://react-spring-bottom-sheet.cocody.dev/fixtures/aside)
+## [Non-blocking overlay mode](https://github.com/wh1teee/react-spring-bottom-sheet-updated/blob/main/pages/fixtures/aside.tsx)
 
 > [View demo code](/pages/fixtures/aside.tsx#L41-L53)
 
@@ -233,6 +304,61 @@ iOS Safari, and some other mobile culprits, can be tricky if you're on a page th
 Type: `boolean`
 
 Disabled by default. By default, a user can expand the bottom sheet only by dragging a header or the overlay. This option enables expanding the bottom sheet on the content dragging.
+
+### springConfig
+
+Type: `Partial<SpringConfig>`
+
+Allows you to customize the React Spring animation configuration for fine-tuned control over how the bottom sheet animates. This configuration is merged with the default settings, so you only need to specify the properties you want to override.
+
+The configuration affects all animations including opening, closing, snapping to different heights, and responding to drag gestures.
+
+```jsx
+import { BottomSheet, BottomSheetSpringConfig } from 'react-spring-bottom-sheet-updated'
+
+// Bouncy animation
+const bouncy: BottomSheetSpringConfig = {
+  tension: 80,
+  friction: 60,
+  mass: 2,
+}
+
+// Fast and snappy animation  
+const fast: BottomSheetSpringConfig = {
+  tension: 300,
+  friction: 30,
+  mass: 0.8,
+}
+
+// Smooth and precise animation
+const smooth: BottomSheetSpringConfig = {
+  tension: 120,
+  friction: 50,
+  mass: 1.5,
+  precision: 0.001,
+}
+
+function Example() {
+  return (
+    <BottomSheet 
+      open={true} 
+      springConfig={bouncy}
+    >
+      Content with bouncy animations
+    </BottomSheet>
+  )
+}
+```
+
+Available configuration properties:
+- `mass` (default: 1) - Mass of the object
+- `tension` (default: 170) - Controls the speed of the spring
+- `friction` (default: 26) - Controls the damping 
+- `clamp` (default: true) - Whether to clamp the spring value
+- `precision` (default: 0.01) - Precision of the animation
+- `velocity` (default: 0) - Initial velocity
+- `duration` - Animation duration in milliseconds (overrides spring physics)
+- `easing` - Easing function for duration-based animations
 
 ## Events
 
@@ -417,15 +543,150 @@ export default function Example() {
 }
 ```
 
+# Troubleshooting & Integration Issues
+
+## Common Integration Problems
+
+### Focus and Scroll Lock Conflicts with Material UI Components
+
+If you're using the bottom sheet with other components that manage focus or scroll locking (like Material UI Drawer), you may encounter conflicts:
+
+**Problem**: Call stack overflow or scroll lock conflicts when using bottom sheet with Material UI components
+**Solution**: Set `disableEnforceFocus={true}` on the Material UI component when the bottom sheet is open:
+
+```jsx
+import { Drawer } from '@mui/material'
+import { BottomSheet } from 'react-spring-bottom-sheet-updated'
+
+function MyComponent() {
+  const [drawerOpen, setDrawerOpen] = useState(true)
+  const [sheetOpen, setSheetOpen] = useState(false)
+  
+  return (
+    <>
+      <Drawer 
+        open={drawerOpen}
+        disableEnforceFocus={sheetOpen} // Disable when bottom sheet is open
+      >
+        {/* Drawer content */}
+      </Drawer>
+      
+      <BottomSheet 
+        open={sheetOpen} 
+        onDismiss={() => setSheetOpen(false)}
+      >
+        {/* Sheet content */}
+      </BottomSheet>
+    </>
+  )
+}
+```
+
+**✅ AUTOMATIC SCROLL LOCK MANAGEMENT**: This library now automatically handles scroll lock conflicts with other libraries like Material UI. The improved scroll lock implementation uses `MutationObserver` to track external style changes and ensures proper restoration of scroll behavior when components are closed in any order. You no longer need to manually manage `disableScrollLock` properties.
+
+### Portal-Rendered Components Inside Bottom Sheet
+
+Components that render to portals (like Material UI Select, Tooltips, etc.) may not receive clicks properly when rendered inside the bottom sheet.
+
+**Problem**: Cannot interact with Material UI Select or other portal-rendered components
+**Solution**: Disable focus trap in the bottom sheet by setting `initialFocusRef={false}`:
+
+```jsx
+import { Select, MenuItem } from '@mui/material'
+import { BottomSheet } from 'react-spring-bottom-sheet-updated'
+
+function MyComponent() {
+  return (
+    <BottomSheet 
+      open={true}
+      initialFocusRef={false} // Disable focus trap for portal components
+    >
+      <Select>
+        <MenuItem value="option1">Option 1</MenuItem>
+        <MenuItem value="option2">Option 2</MenuItem>
+      </Select>
+    </BottomSheet>
+  )
+}
+```
+
+### SSR and Hydration Issues
+
+When using with Next.js or other SSR frameworks, you might encounter hydration mismatches:
+
+**Problem**: Hydration mismatch errors in console
+**Solution**: The component handles SSR automatically, but ensure you're using the latest React version (18+) and that your `open` state is properly initialized:
+
+```jsx
+import { useState, useEffect } from 'react'
+import { BottomSheet } from 'react-spring-bottom-sheet-updated'
+
+function MyComponent() {
+  const [mounted, setMounted] = useState(false)
+  const [open, setOpen] = useState(false)
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  
+  if (!mounted) return null
+  
+  return (
+    <BottomSheet open={open} onDismiss={() => setOpen(false)}>
+      Content
+    </BottomSheet>
+  )
+}
+```
+
+### React 19 Compatibility
+
+This library is fully compatible with React 19. If you encounter any issues:
+
+1. Ensure you're using the latest version of this package
+2. Check that your `@types/react` version matches your React version
+3. Verify that other libraries in your project support React 19
+
+### Memory Leaks Prevention
+
+The library automatically handles cleanup to prevent memory leaks. However, ensure you:
+
+1. Always provide an `onDismiss` callback
+2. Don't manually manage the component's lifecycle
+3. The component will automatically unmount when `open={false}`
+
+### TypeScript Issues
+
+**Problem**: Type errors when using with strict TypeScript settings
+**Solution**: Ensure you have the correct peer dependencies installed and your TypeScript version is 4.5+:
+
+```bash
+npm install --save-dev @types/react@^19.0.0 typescript@^5.0.0
+```
+
+## Performance Optimization Tips
+
+1. **Lazy Loading**: Load bottom sheet content only when needed
+2. **Spring Configuration**: Customize `springConfig` for your specific use case
+3. **Reduce Motion**: The component automatically respects `prefers-reduced-motion`
+4. **Avoid Heavy Renders**: Use `React.memo()` for complex sheet content
+
+## Getting Help
+
+- **Bug Reports**: [GitHub Issues](https://github.com/wh1teee/react-spring-bottom-sheet-updated/issues)
+- **Feature Requests**: [GitHub Discussions](https://github.com/wh1teee/react-spring-bottom-sheet-updated/discussions)
+- **Questions**: Check existing issues or create a new discussion
+
 # Credits
 
 - Play icon used on frame overlays: [font-awesome](https://fontawesome.com/icons/play-circle?style=regular)
 - Phone frame used in logo: [Mono Devices 1.0](https://www.figma.com/community/file/896042888090872154/Mono-Devices-1.0)
 - iPhone frame used to wrap examples: [iOS 14 UI Kit for Figma](<https://www.figma.com/community/file/858143367356468985/(Variants)-iOS-%26-iPadOS-14-UI-Kit-for-Figma>)
 
-[gzip-badge]: http://img.badgesize.io/https://unpkg.com/react-spring-bottom-sheet/dist/index.es.js?compression=gzip&label=gzip%20size&style=flat-square
-[size-badge]: http://img.badgesize.io/https://unpkg.com/react-spring-bottom-sheet/dist/index.es.js?label=size&style=flat-square
-[unpkg-dist]: https://unpkg.com/react-spring-bottom-sheet/dist/
+[gzip-badge]: http://img.badgesize.io/https://unpkg.com/react-spring-bottom-sheet-updated/dist/index.es.js?compression=gzip&label=gzip%20size&style=flat-square
+[size-badge]: http://img.badgesize.io/https://unpkg.com/react-spring-bottom-sheet-updated/dist/index.es.js?label=size&style=flat-square
+[unpkg-dist]: https://unpkg.com/react-spring-bottom-sheet-updated/dist/
 [module-formats-badge]: https://img.shields.io/badge/module%20formats-cjs%2C%20es%2C%20modern-green.svg?style=flat-square
 [react-spring]: https://github.com/pmndrs/react-spring
-[react-use-gesture]: https://github.com/pmndrs/react-use-gesture
+[@use-gesture/react]: https://github.com/pmndrs/use-gesture
+\nTrigger CI for prerelease.

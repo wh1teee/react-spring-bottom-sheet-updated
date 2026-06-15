@@ -1,3 +1,10 @@
+/**
+ * Layout measurement properties for snap point calculations.
+ * 
+ * Contains all the necessary dimensions for computing valid snap points
+ * based on content size, viewport constraints, and layout components.
+ * Used by snap point functions to determine available positions.
+ */
 export type SnapPointProps = {
   /**
    * The height of the sticky header, if there's one
@@ -21,13 +28,46 @@ export type SnapPointProps = {
   maxHeight: number
 }
 
-export type snapPoints = (props: SnapPointProps) => number[] | number
+/**
+ * Function type for calculating dynamic snap points based on layout measurements.
+ * 
+ * This function receives current layout properties and returns either a single
+ * snap point or an array of multiple snap points. Enables responsive behavior
+ * based on content size and viewport dimensions.
+ * 
+ * @param props - Layout measurements including heights and constraints
+ * @returns Single snap point number or array of snap points in pixels
+ * 
+ * @example
+ * ```typescript
+ * const snapPoints: SnapPointsFunction = ({ maxHeight }) => [
+ *   maxHeight * 0.4,  // 40% of screen height
+ *   maxHeight * 0.8   // 80% of screen height
+ * ]
+ * ```
+ */
+export type SnapPointsFunction = (props: SnapPointProps) => number[] | number
 
 /**
- * `window` comes from window.onresize, maxheightprop is if the `maxHeight` prop is used, and `element` comes from the resize observers that listens to header, footer and the content area
+ * Source identifier for resize events to track what triggered the resize.
+ * 
+ * Helps differentiate between different types of resize events for proper
+ * handling and animation behavior. Each source may require different
+ * response strategies for optimal user experience.
+ * 
+ * - `window`: Triggered by window.onresize (viewport changes)
+ * - `maxheightprop`: Triggered when maxHeight prop is updated
+ * - `element`: Triggered by ResizeObserver on header, footer, or content area
  */
 export type ResizeSource = 'window' | 'maxheightprop' | 'element'
 
+/**
+ * Configuration object for default snap point calculation.
+ * 
+ * Combines current snap point state with layout measurements to enable
+ * intelligent default positioning. Used by defaultSnap functions to
+ * determine appropriate initial height based on user interaction history.
+ */
 export type defaultSnapProps = {
   /** The snap points currently in use, this can be controlled by providing a `snapPoints` function on the bottom sheet. */
   snapPoints: number[]
@@ -35,6 +75,89 @@ export type defaultSnapProps = {
   lastSnap: number | null
 } & SnapPointProps
 
+// React Spring configuration type
+export type SpringConfig = {
+  /**
+   * Animation duration in milliseconds
+   */
+  duration?: number
+  /**
+   * Easing function
+   */
+  easing?: (t: number) => number
+  /**
+   * Mass of the object
+   * @default 1
+   */
+  mass?: number
+  /**
+   * Tension controls the speed of the spring
+   * @default 170
+   */
+  tension?: number
+  /**
+   * Friction controls the damping
+   * @default 26
+   */
+  friction?: number
+  /**
+   * Whether to clamp the spring value
+   * @default true
+   */
+  clamp?: boolean
+  /**
+   * Precision of the animation
+   * @default 0.01
+   */
+  precision?: number
+  /**
+   * Initial velocity
+   * @default 0
+   */
+  velocity?: number
+  /**
+   * Whether to limit the animation to the bounds
+   * @default false
+   */
+  bounce?: number
+  /**
+   * Damping ratio
+   * @default 1
+   */
+  damping?: number
+  /**
+   * Rest velocity
+   * @default 0.001
+   */
+  restVelocity?: number
+  /**
+   * Rest displacement
+   * @default 0.001
+   */
+  restDisplacement?: number
+}
+
+/**
+ * Spring animation event types for tracking bottom sheet state changes.
+ * 
+ * These events are fired during different animation phases to enable
+ * external coordination and lifecycle management. Each event type provides
+ * relevant context for the specific animation being performed.
+ * 
+ * @example
+ * ```typescript
+ * const handleSpringStart = (event: SpringEvent) => {
+ *   switch (event.type) {
+ *     case 'OPEN':
+ *       console.log('Sheet is opening')
+ *       break
+ *     case 'SNAP':
+ *       console.log('Snapping from:', event.source)
+ *       break
+ *   }
+ * }
+ * ```
+ */
 /* Might make sense to expose a preventDefault method here */
 export type SpringEvent =
   | { type: 'OPEN' }
@@ -125,7 +248,7 @@ export type Props = {
    * Handler that is called to get the height values that the bottom sheet can *snap* to when the user stops dragging.
    * @default ({ minHeight }) => minHeight
    */
-  snapPoints?: snapPoints
+  snapPoints?: SnapPointsFunction
 
   /**
    * Handler that is called to get the initial height of the bottom sheet when it's opened (or when the viewport is resized).
@@ -163,7 +286,57 @@ export type Props = {
    */
   preventPullUp?: boolean,
 
-} & Omit<React.PropsWithoutRef<JSX.IntrinsicElements['div']>, 'children'>
+  /**
+   * Custom React Spring configuration to override default animation settings.
+   * This config will be merged with the default configuration, allowing for fine-tuned control
+   * over the animation behavior including timing, easing, and physics properties.
+   * 
+   * @example
+   * // Slower, bouncy animation
+   * springConfig={{
+   *   tension: 100,
+   *   friction: 50,
+   *   mass: 2
+   * }}
+   * 
+   * @example
+   * // Fast, snappy animation
+   * springConfig={{
+   *   tension: 300,
+   *   friction: 30
+   * }}
+   * 
+   * @default { mass: 1, tension: 170, friction: 26, clamp: true }
+   */
+  springConfig?: Partial<SpringConfig>
+
+  /**
+   * Controls the swipe-to-close gesture logic.
+   * 
+   * @default 'distance'
+   * 
+   * - 'distance': Pure distance-based closing - most reliable for mobile devices
+   * - 'movement': Distance + cumulative movement validation
+   * - 'original': Distance + direction tolerance - handles imperfect mobile swipes
+   */
+  closeLogic?: 'original' | 'distance' | 'movement'
+
+  /**
+   * Threshold for swipe-to-close as a percentage from the top of modal height.
+   * Higher values make it easier to close, lower values require more swipe distance.
+   * 
+   * @default 0.4 (must swipe past 40% from top to close)
+   * 
+   * @example
+   * // Easier closing for quick interactions
+   * closeThreshold={0.3}
+   * 
+   * // More conservative for forms/critical content
+   * closeThreshold={0.5}
+   */
+  closeThreshold?: number
+
+} & Omit<React.ComponentProps<'div'>, 'children'>
 
 export interface RefHandles {
   /**

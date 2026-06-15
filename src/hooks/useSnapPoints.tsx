@@ -1,4 +1,7 @@
-import React, {
+'use client'
+
+import type React from 'react'
+import {
   useCallback,
   useDebugValue,
   useEffect,
@@ -6,11 +9,9 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { ResizeObserver, ResizeObserverEntry } from '@juggle/resize-observer'
-import type { defaultSnapProps, ResizeSource, snapPoints } from '../types'
+import type { defaultSnapProps, ResizeSource, SnapPointsFunction } from '../types'
 import { processSnapPoints, roundAndCheckForNaN } from '../utils'
-import { useReady } from './useReady'
-import { ResizeObserverOptions } from '@juggle/resize-observer/lib/ResizeObserverOptions'
+import type { useReady } from './useReady'
 import { useLayoutEffect } from './useLayoutEffect'
 
 export function useSnapPoints({
@@ -31,7 +32,7 @@ export function useSnapPoints({
   controlledMaxHeight?: number
   footerEnabled: boolean
   footerRef: React.RefObject<Element>
-  getSnapPoints: snapPoints
+  getSnapPoints: SnapPointsFunction
   headerEnabled: boolean
   headerRef: React.RefObject<Element>
   heightRef: React.RefObject<number>
@@ -78,11 +79,18 @@ export function useSnapPoints({
         minHeight,
         maxHeight,
         snapPoints,
-        lastSnap: lastSnapRef.current,
+        lastSnap: lastSnapRef?.current,
       })
     } else {
       unsafeSearch = numberOrCallback
     }
+    
+    // Add safety check for NaN values
+    if (!Number.isFinite(unsafeSearch)) {
+      // Invalid value received, fallback to minSnap
+      return minSnap
+    }
+    
     const querySnap = roundAndCheckForNaN(unsafeSearch)
     return snapPoints.reduce(
       (prev, curr) =>
@@ -140,10 +148,18 @@ function useDimensions({
     enabled: footerEnabled,
     resizeSourceRef,
   })
-  const minHeight =
-    Math.min(maxHeight - headerHeight - footerHeight, contentHeight) +
-    headerHeight +
-    footerHeight
+  const minHeight = (() => {
+    // Ensure all values are finite numbers before calculation
+    const safeMaxHeight = Number.isFinite(maxHeight) ? maxHeight : 0
+    const safeHeaderHeight = Number.isFinite(headerHeight) ? headerHeight : 0
+    const safeFooterHeight = Number.isFinite(footerHeight) ? footerHeight : 0
+    const safeContentHeight = Number.isFinite(contentHeight) ? contentHeight : 0
+    
+    const calculated = Math.min(safeMaxHeight - safeHeaderHeight - safeFooterHeight, safeContentHeight) + 
+                      safeHeaderHeight + safeFooterHeight
+    
+    return Number.isFinite(calculated) ? calculated : 0
+  })()
 
   useDebugValue(`minHeight: ${minHeight}`)
 
@@ -165,7 +181,7 @@ function useDimensions({
 const observerOptions: ResizeObserverOptions = {
   // Respond to changes to padding, happens often on iOS when using env(safe-area-inset-bottom)
   // And the user hides or shows the Safari browser toolbar
-  box: 'border-box',
+  box: 'border-box' as ResizeObserverBoxOptions,
 }
 /**
  * Hook for determining the size of an element using the Resize Observer API.
@@ -184,7 +200,7 @@ function useElementSizeObserver(
     resizeSourceRef: React.MutableRefObject<ResizeSource>
   }
 ): number {
-  let [size, setSize] = useState(0)
+  const [size, setSize] = useState(0)
 
   useDebugValue(`${label}: ${size}`)
 

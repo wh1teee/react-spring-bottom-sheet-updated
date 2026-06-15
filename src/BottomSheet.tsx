@@ -1,3 +1,4 @@
+'use client'
 //
 // In order to greatly reduce complexity this component is designed to always transition to open on mount, and then
 // transition to a closed state later. This ensures that all memory used to keep track of animation and gesture state
@@ -6,14 +7,18 @@
 // cause race conditions.
 
 import { useMachine } from '@xstate/react'
+import { fromPromise } from 'xstate'
 import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
   useRef,
+  useMemo,
+  forwardRef,
+  type RefObject,
 } from 'react'
-import { animated, config } from 'react-spring'
-import { rubberbandIfOutOfBounds, useDrag } from 'react-use-gesture'
+import { animated, config } from '@react-spring/web'
+import { rubberbandIfOutOfBounds, useDrag } from '@use-gesture/react'
 import {
   useAriaHider,
   useFocusTrap,
@@ -32,21 +37,67 @@ import type {
   RefHandles,
   ResizeSource,
   SnapPointProps,
+  SpringConfig,
 } from './types'
-import { debugging } from './utils'
 
-const { tension, friction } = config.default
+// Default spring configuration that can be overridden by user
+// Uses React Spring's official defaults as base, adds only critical parameters
+const defaultSpringConfig: SpringConfig = {
+  ...config.default,
+  mass: 1,
+  clamp: true,     // Critical: prevents animation from going out of bounds
+  precision: 0.01, // Important: controls animation smoothness and completion
+  velocity: 0,
+}
 
 // @TODO implement AbortController to deal with race conditions
 
 // @TODO rename to SpringBottomSheet and allow userland to import it directly, for those who want maximum control and minimal bundlesize
-export const BottomSheet = React.forwardRef<
+
+/**
+ * Main BottomSheet component implementation using React Spring for animations and gestures.
+ * 
+ * This component provides a fully accessible, animated bottom sheet that can be dragged,
+ * snapped to different heights, and dismissed via swipe gestures. It includes comprehensive
+ * mobile gesture support with configurable close logic and adaptive threshold calculation.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <BottomSheet
+ *   open={isOpen}
+ *   onDismiss={() => setIsOpen(false)}
+ *   snapPoints={({ maxHeight }) => [maxHeight * 0.4, maxHeight * 0.8]}
+ *   closeLogic="distance"
+ *   closeThreshold={0.4}
+ * >
+ *   <div>Sheet content</div>
+ * </BottomSheet>
+ * ```
+ * 
+ * @param props - Combined props including initialState, lastSnapRef, and all Props
+ * @param props.initialState - Initial animation state ('OPEN' or 'CLOSED')
+ * @param props.lastSnapRef - Reference to the last snap point for state persistence
+ * @param props.closeLogic - Swipe-to-close gesture logic ('original' | 'distance' | 'movement')
+ * @param props.closeThreshold - Threshold for close gesture as percentage of modal height (0-1)
+ * @param ref - Forward ref for imperative API access
+ * 
+ * @returns Animated bottom sheet component with gesture handling and accessibility features
+ * 
+ * @complexity O(1) - Linear performance with content size
+ * @callFlow
+ * - Renders animated.div with backdrop and overlay
+ * - Uses useDrag for gesture handling via handleDrag
+ * - Manages state with XState overlay machine
+ * - Handles focus trap, scroll lock, and ARIA management
+ */
+export const BottomSheet = forwardRef<
   RefHandles,
   {
     initialState: 'OPEN' | 'CLOSED'
-    lastSnapRef: React.MutableRefObject<number | null>
+    lastSnapRef: RefObject<number | null>
   } & Props
->(function BottomSheetInternal(
+>((
   {
     children,
     sibling,
@@ -55,7 +106,7 @@ export const BottomSheet = React.forwardRef<
     header,
     open: _open,
     initialState,
-    lastSnapRef,
+    lastSnapRef: lastSnapRefProp,
     initialFocusRef,
     onDismiss,
     maxHeight: controlledMaxHeight,
@@ -71,16 +122,28 @@ export const BottomSheet = React.forwardRef<
     expandOnContentDrag = false,
     disableExpandList = [],
     preventPullUp = false,
+    springConfig: customSpringConfig,
+    closeLogic = 'distance',
+    closeThreshold = 0.4,
     ...props
   },
   forwardRef
-) {
+) => {
+  // Merge custom config with default config
+  const springConfig = useMemo(() => ({
+    ...defaultSpringConfig,
+    ...customSpringConfig,
+  }), [customSpringConfig])
+
   // Before any animations can start we need to measure a few things, like the viewport and the dimensions of content, and header + footer if they exist
   // @TODO make ready its own state perhaps, before open or closed
   const { ready, registerReady } = useReady()
-
+  const lastSnapRef = useRef(lastSnapRefProp?.current ?? null)
   // Controls the drag handler, used by spring operations that happen outside the render loop in React
   const canDragRef = useRef(false)
+
+  // Add cleanup for any pending setTimeout from handleDrag
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // This way apps don't have to remember to wrap their callbacks in useCallback to avoid breaking the sheet
   const onSpringStartRef = useRef(onSpringStart)
@@ -104,38 +167,39 @@ export const BottomSheet = React.forwardRef<
 
   // Keeps track of the current height, or the height transitioning to
   const heightRef = useRef(0)
-  const resizeSourceRef = useRef<ResizeSource>()
+  const resizeSourceRef = useRef<ResizeSource>('window')
   const preventScrollingRef = useRef(false)
 
   const prefersReducedMotion = useReducedMotion()
 
   // "Plugins" huhuhu
   const scrollLockRef = useScrollLock({
-    targetRef: scrollRef,
+    targetRef: scrollRef as React.RefObject<Element>,
     enabled: ready && scrollLocking,
     reserveScrollBarGap,
   })
   const ariaHiderRef = useAriaHider({
-    targetRef: containerRef,
+    targetRef: containerRef as React.RefObject<Element>,
     enabled: ready && blocking,
   })
   const focusTrapRef = useFocusTrap({
-    targetRef: containerRef,
-    fallbackRef: overlayRef,
+    targetRef: containerRef as React.RefObject<HTMLElement>,
+    fallbackRef: overlayRef as React.RefObject<HTMLElement>,
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- Must convert false to undefined for focus trap
     initialFocusRef: initialFocusRef || undefined,
     enabled: ready && blocking && initialFocusRef !== false,
   })
 
   const { minSnap, maxSnap, maxHeight, findSnap } = useSnapPoints({
-    contentRef,
+    contentRef: contentRef as React.RefObject<Element>,
     controlledMaxHeight,
     footerEnabled: !!footer,
-    footerRef,
+    footerRef: footerRef as React.RefObject<Element>,
     getSnapPoints,
     headerEnabled: header !== false,
-    headerRef,
+    headerRef: headerRef as React.RefObject<Element>,
     heightRef,
-    lastSnapRef,
+    lastSnapRef: lastSnapRef as React.RefObject<number>,
     ready,
     registerReady,
     resizeSourceRef,
@@ -158,24 +222,17 @@ export const BottomSheet = React.forwardRef<
 
   // New utility for using events safely
   const asyncSet = useCallback<typeof set>(
-    // @ts-ignore
-    ({ onRest, config: { velocity = 1, ...config } = {}, ...opts }) =>
+    // @ts-expect-error - Temporary type override for spring callback parameters
+    ({ onRest, config: configOverride, ...opts }) =>
       // @ts-expect-error
       new Promise((resolve) =>
-        set({
+        set.start({
           ...opts,
           config: {
-            velocity,
-            ...config,
-            // @see https://springs.pomb.us
-            mass: 1,
-            // "stiffness"
-            tension,
-            // "damping"
-            friction: Math.max(
-              friction,
-              friction + (friction - friction * velocity)
-            ),
+            // Use merged spring config as base
+            ...springConfig,
+            // Allow per-call config overrides
+            ...configOverride,
           },
           onRest: (...args) => {
             // @ts-expect-error
@@ -184,17 +241,16 @@ export const BottomSheet = React.forwardRef<
           },
         })
       ),
-    [set]
+    [set, springConfig]
   )
-  const [current, send] = useMachine(overlayMachine, {
-    devTools: debugging,
+  const [current, send] = useMachine(overlayMachine.provide({
     actions: {
       onOpenCancel: useCallback(
         () => onSpringCancelRef.current?.({ type: 'OPEN' }),
         []
       ),
       onSnapCancel: useCallback(
-        (context) =>
+        ({ context }) =>
           onSpringCancelRef.current?.({
             type: 'SNAP',
             source: context.snapSource,
@@ -218,7 +274,7 @@ export const BottomSheet = React.forwardRef<
         []
       ),
       onSnapEnd: useCallback(
-        (context, event) =>
+        ({ context }, _event) =>
           onSpringEndRef.current?.({
             type: 'SNAP',
             source: context.snapSource,
@@ -234,88 +290,69 @@ export const BottomSheet = React.forwardRef<
         []
       ),
     },
-    context: { initialState },
-    services: {
-      onSnapStart: useCallback(
-        async (context, event) =>
-          onSpringStartRef.current?.({
-            type: 'SNAP',
-            source: event.payload.source || 'custom',
-          }),
-        []
-      ),
-      onOpenStart: useCallback(
-        async () => onSpringStartRef.current?.({ type: 'OPEN' }),
-        []
-      ),
-      onCloseStart: useCallback(
-        async () => onSpringStartRef.current?.({ type: 'CLOSE' }),
-        []
-      ),
-      onResizeStart: useCallback(
-        async () =>
-          onSpringStartRef.current?.({
-            type: 'RESIZE',
-            source: resizeSourceRef.current,
-          }),
-        []
-      ),
-      onSnapEnd: useCallback(
-        async (context, event) =>
-          onSpringEndRef.current?.({
-            type: 'SNAP',
-            source: context.snapSource,
-          }),
-        []
-      ),
-      onOpenEnd: useCallback(
-        async () => onSpringEndRef.current?.({ type: 'OPEN' }),
-        []
-      ),
-      onCloseEnd: useCallback(
-        async () => onSpringEndRef.current?.({ type: 'CLOSE' }),
-        []
-      ),
-      onResizeEnd: useCallback(
-        async () =>
-          onSpringEndRef.current?.({
-            type: 'RESIZE',
-            source: resizeSourceRef.current,
-          }),
-        []
-      ),
-      renderVisuallyHidden: useCallback(
-        async (context, event) => {
-          await asyncSet({
-            y: defaultSnapRef.current,
-            ready: 0,
-            maxHeight: maxHeightRef.current,
-            maxSnap: maxSnapRef.current,
-            // Using defaultSnapRef instead of minSnapRef to avoid animating `height` on open
-            minSnap: defaultSnapRef.current,
-            immediate: true,
-          })
-        },
-        [asyncSet]
-      ),
-      activate: useCallback(
-        async (context, event) => {
-          canDragRef.current = true
-          await Promise.all([
-            scrollLockRef.current.activate(),
-            focusTrapRef.current.activate(),
-            ariaHiderRef.current.activate(),
-          ])
-        },
-        [ariaHiderRef, focusTrapRef, scrollLockRef]
-      ),
-      deactivate: useCallback(async () => {
+    actors: {
+      onSnapStart: fromPromise(async ({ input }) => {
+        return onSpringStartRef.current?.({
+          type: 'SNAP',
+          source: input?.source ?? 'custom',
+        })
+      }),
+      onOpenStart: fromPromise(async () => {
+        return onSpringStartRef.current?.({ type: 'OPEN' })
+      }),
+      onCloseStart: fromPromise(async () => {
+        return onSpringStartRef.current?.({ type: 'CLOSE' })
+      }),
+      onResizeStart: fromPromise(async () => {
+        return onSpringStartRef.current?.({
+          type: 'RESIZE',
+          source: resizeSourceRef.current,
+        })
+      }),
+      onSnapEnd: fromPromise(async ({ input }) => {
+        return onSpringEndRef.current?.({
+          type: 'SNAP',
+          source: input?.snapSource ?? 'custom',
+        })
+      }),
+      onOpenEnd: fromPromise(async () => {
+        return onSpringEndRef.current?.({ type: 'OPEN' })
+      }),
+      onCloseEnd: fromPromise(async () => {
+        return onSpringEndRef.current?.({ type: 'CLOSE' })
+      }),
+      onResizeEnd: fromPromise(async () => {
+        return onSpringEndRef.current?.({
+          type: 'RESIZE',
+          source: resizeSourceRef.current,
+        })
+      }),
+      renderVisuallyHidden: fromPromise(async () => {
+        await asyncSet({
+          y: defaultSnapRef.current,
+          ready: 0,
+          maxHeight: maxHeightRef.current,
+          maxSnap: maxSnapRef.current,
+          // Using defaultSnapRef instead of minSnapRef to avoid animating `height` on open
+          minSnap: defaultSnapRef.current,
+          immediate: true,
+        })
+      }),
+      activate: fromPromise(async () => {
+        canDragRef.current = true
+        await Promise.all([
+          scrollLockRef.current.activate(),
+          focusTrapRef.current.activate(),
+          ariaHiderRef.current.activate(),
+        ])
+      }),
+      deactivate: fromPromise(async () => {
         scrollLockRef.current.deactivate()
         focusTrapRef.current.deactivate()
         ariaHiderRef.current.deactivate()
         canDragRef.current = false
-      }, [ariaHiderRef, focusTrapRef, scrollLockRef]),
-      openImmediately: useCallback(async () => {
+      }),
+      openImmediately: fromPromise(async () => {
         heightRef.current = defaultSnapRef.current
         await asyncSet({
           y: defaultSnapRef.current,
@@ -326,8 +363,8 @@ export const BottomSheet = React.forwardRef<
           minSnap: defaultSnapRef.current,
           immediate: true,
         })
-      }, [asyncSet]),
-      openSmoothly: useCallback(async () => {
+      }),
+      openSmoothly: fromPromise(async () => {
         await asyncSet({
           y: 0,
           ready: 1,
@@ -349,25 +386,21 @@ export const BottomSheet = React.forwardRef<
           minSnap: defaultSnapRef.current,
           immediate: prefersReducedMotion.current,
         })
-      }, [asyncSet, prefersReducedMotion]),
-      snapSmoothly: useCallback(
-        async (context, event) => {
-          const snap = findSnapRef.current(context.y)
-          heightRef.current = snap
-          lastSnapRef.current = snap
-          await asyncSet({
-            y: snap,
-            ready: 1,
-            maxHeight: maxHeightRef.current,
-            maxSnap: maxSnapRef.current,
-            minSnap: minSnapRef.current,
-            immediate: prefersReducedMotion.current,
-            config: { velocity: context.velocity },
-          })
-        },
-        [asyncSet, lastSnapRef, prefersReducedMotion]
-      ),
-      resizeSmoothly: useCallback(async () => {
+      }),
+      snapSmoothly: fromPromise(async ({ input }) => {
+        const snap = findSnapRef.current(input?.y ?? 0)
+        heightRef.current = snap
+        lastSnapRef.current = snap
+        await asyncSet({
+          y: snap,
+          ready: 1,
+          maxHeight: maxHeightRef.current,
+          maxSnap: maxSnapRef.current,
+          minSnap: minSnapRef.current,
+          immediate: prefersReducedMotion.current,
+        })
+      }),
+      resizeSmoothly: fromPromise(async () => {
         const snap = findSnapRef.current(heightRef.current)
         heightRef.current = snap
         lastSnapRef.current = snap
@@ -382,61 +415,71 @@ export const BottomSheet = React.forwardRef<
               ? prefersReducedMotion.current
               : true,
         })
-      }, [asyncSet, lastSnapRef, prefersReducedMotion]),
-      closeSmoothly: useCallback(
-        async (context, event) => {
-          // Avoid animating the height property on close and stay within FLIP bounds by upping the minSnap
-          asyncSet({
-            minSnap: heightRef.current,
-            immediate: true,
-          })
+      }),
+      closeSmoothly: fromPromise(async () => {
+        // Avoid animating the height property on close and stay within FLIP bounds by upping the minSnap
+        asyncSet({
+          minSnap: heightRef.current,
+          immediate: true,
+        })
 
-          heightRef.current = 0
+        heightRef.current = 0
 
-          await asyncSet({
-            y: 0,
-            maxHeight: maxHeightRef.current,
-            maxSnap: maxSnapRef.current,
-            immediate: prefersReducedMotion.current,
-          })
+        await asyncSet({
+          y: 0,
+          maxHeight: maxHeightRef.current,
+          maxSnap: maxSnapRef.current,
+          immediate: prefersReducedMotion.current,
+        })
 
-          await asyncSet({ ready: 0, immediate: true })
-        },
-        [asyncSet, prefersReducedMotion]
-      ),
+        await asyncSet({ ready: 0, immediate: true })
+      }),
     },
+  }), {
+    input: { initialState }
   })
 
   useEffect(() => {
     if (!ready) return
 
     if (_open) {
-      send('OPEN')
+      send({ type: 'OPEN' })
     } else {
-      send('CLOSE')
+      send({ type: 'CLOSE' })
     }
   }, [_open, send, ready])
   useLayoutEffect(() => {
     // Adjust the height whenever the snap points are changed due to resize events
     if (maxHeight || maxSnap || minSnap) {
-      send('RESIZE')
+      send({ type: 'RESIZE' })
     }
   }, [maxHeight, maxSnap, minSnap, send])
   useEffect(
     () => () => {
-      // Ensure effects are cleaned up on unmount, in case they're not cleaned up otherwise
+      try {
+        set.stop()
+      } catch {
+        // Spring cleanup failed - this is expected during component unmounting
+      }
+      
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+      
       scrollLockRef.current.deactivate()
       focusTrapRef.current.deactivate()
       ariaHiderRef.current.deactivate()
     },
-    [ariaHiderRef, focusTrapRef, scrollLockRef]
+    [set, ariaHiderRef, focusTrapRef, scrollLockRef]
   )
 
   useImperativeHandle(
     forwardRef,
     () => ({
       snapTo: (numberOrCallback, { velocity = 1, source = 'custom' } = {}) => {
-        send('SNAP', {
+        send({
+          type: 'SNAP',
           payload: {
             y: findSnapRef.current(numberOrCallback),
             velocity,
@@ -453,18 +496,22 @@ export const BottomSheet = React.forwardRef<
 
   useEffect(() => {
     const elem = scrollRef.current
+    if (!elem) return
 
     const preventScrolling = e => {
-      const disableExpandListNodes = disableExpandList.map(selector => containerRef.current.querySelector(selector)).filter(Boolean);
-      if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode.contains(e.target))) {
-        return true
-      } else if (preventScrollingRef.current && elem.scrollTop <= 0) {
+      if (containerRef.current) {
+        const disableExpandListNodes = disableExpandList.map(selector => containerRef.current!.querySelector(selector)).filter(Boolean);
+        if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode && disableNode.contains(e.target))) {
+          return true
+        }
+      }
+      if (preventScrollingRef.current && elem.scrollTop <= 0) {
         e.preventDefault()
       }
     }
 
     let prevValue = 0;
-    const preventSafariOverscrollOnStart = e => {
+    const preventSafariOverscrollOnStart = _e => {
       if (elem.scrollTop < 0) {
         prevValue = elem.scrollTop;
       }
@@ -485,13 +532,51 @@ export const BottomSheet = React.forwardRef<
       });
     }
     return () => {
-      elem.removeEventListener('scroll', preventScrolling)
-      elem.removeEventListener('touchmove', preventScrolling)
-      elem.removeEventListener('touchmove', preventSafariOverscrollOnMove);
-      elem.removeEventListener('touchstart', preventSafariOverscrollOnStart);
+      if (elem) {
+        elem.removeEventListener('scroll', preventScrolling)
+        elem.removeEventListener('touchmove', preventScrolling)
+        elem.removeEventListener('touchmove', preventSafariOverscrollOnMove);
+        elem.removeEventListener('touchstart', preventSafariOverscrollOnStart);
+      }
     }
   }, [expandOnContentDrag, scrollRef, disableExpandList])
 
+  /**
+   * Handles drag gestures for the bottom sheet including swipe-to-close functionality.
+   * 
+   * This function processes all drag interactions, manages snap point transitions,
+   * and implements the adaptive close threshold logic for mobile gesture handling.
+   * It includes comprehensive safety checks and supports multiple close logic modes.
+   * 
+   * @param gestureState - Object containing gesture state from @use-gesture/react
+   * @param gestureState.args - Array containing gesture configuration options
+   * @param gestureState.args[0].closeOnTap - Whether tap gestures should trigger close
+   * @param gestureState.args[0].isContentDragging - Whether content area is being dragged
+   * @param gestureState.cancel - Function to cancel the current gesture
+   * @param gestureState.direction - [x, y] direction vector of the gesture
+   * @param gestureState.down - Whether the pointer is currently down
+   * @param gestureState.first - Whether this is the first event in the gesture
+   * @param gestureState.last - Whether this is the last event in the gesture
+   * @param gestureState.memo - Previous position value for gesture continuity
+   * @param gestureState.movement - [x, y] movement vector from gesture start
+   * @param gestureState.tap - Whether this is a tap gesture
+   * @param gestureState.velocity - Current gesture velocity for prediction
+   * @param gestureState.event - Native DOM event that triggered the gesture
+   * 
+   * @returns Updated memo value for gesture continuity
+   * 
+   * @complexity O(1) - Constant time operations with DOM queries
+   * @callFlow
+   * - Validates gesture state and safety conditions
+   * - Calculates predicted position using velocity
+   * - Applies close logic based on closeLogic prop:
+   *   - 'distance': Pure distance-based (mobile-optimized)
+   *   - 'movement': Distance + cumulative movement validation
+   *   - 'original': Distance + direction tolerance
+   * - Uses adaptive threshold: rawY + predictedDistance < maxHeight * closeThreshold
+   * - Handles rubberband bounds and snap point transitions
+   * - Integrates with expandOnContentDrag and scroll prevention
+   */
   const handleDrag = ({
     args: [{ closeOnTap = false, isContentDragging = false } = {}] = [],
     cancel,
@@ -505,11 +590,20 @@ export const BottomSheet = React.forwardRef<
     velocity,
     event,
   }) => {
-    const my = _my * -1
+    // Ensure all values are finite numbers to prevent NaN calculations
+    const my = Number.isFinite(_my) ? _my * -1 : 0
+    const safeVelocity = Number.isFinite(velocity) ? velocity : 0
+    const safeMemo = Number.isFinite(memo) ? memo : 0
+    
+    if (!scrollRef.current) {
+      cancel()
+      return memo
+    }
+    
     const hasScroll = scrollRef.current.scrollHeight > scrollRef.current.clientHeight;
     if (containerRef.current && disableExpandList.length) {
-      const disableExpandListNodes = disableExpandList.map(selector => containerRef.current.querySelector(selector)).filter(Boolean);
-      if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode.contains(event.target))) {
+      const disableExpandListNodes = disableExpandList.map(selector => containerRef.current!.querySelector(selector)).filter(Boolean);
+      if (disableExpandListNodes.length && disableExpandListNodes.some(disableNode => disableNode && disableNode.contains(event.target))) {
         cancel()
         return memo
       }
@@ -517,15 +611,21 @@ export const BottomSheet = React.forwardRef<
     
     // Cancel the drag operation if the canDrag state changed
     if (!canDragRef.current) {
-      console.log('handleDrag cancelled dragging because canDragRef is false')
       cancel()
       return memo
     }
 
     if (onDismiss && closeOnTap && tap) {
       cancel()
-      // Runs onDismiss in a timeout to avoid tap events on the backdrop from triggering click events on elements underneath
-      setTimeout(() => onDismiss(), 10)
+      
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+      
+      timeoutRef.current = setTimeout(() => {
+        onDismiss()
+        timeoutRef.current = null
+      }, 10)
       return memo
     }
 
@@ -534,22 +634,53 @@ export const BottomSheet = React.forwardRef<
       return memo
     }
 
-    const rawY = memo + my
-    const predictedDistance = my * velocity
+    const rawY = safeMemo + my
+    const predictedDistance = my * safeVelocity
     const predictedY = Math.max(
       minSnapRef.current,
       Math.min(maxSnapRef.current, rawY + predictedDistance * 2)
     )
 
-    if (
-      !down &&
-      onDismiss &&
-      direction > 0 &&
-      rawY + predictedDistance < minSnapRef.current / 2
-      && (!hasScroll || scrollRef.current.scrollTop <= 0)
-    ) {
+    // Close logic: dismiss if predicted final position crosses the adaptive threshold
+    const shouldClose = (() => {
+      // For expandOnContentDrag mode, require scroll to be at top before closing
+      // This prevents accidental closure when users are scrolling content
+      const scrollCondition = expandOnContentDrag 
+        ? (!hasScroll || scrollRef.current.scrollTop <= 0)
+        : true;
+      
+      /*
+       * Adaptive close threshold calculation:
+       * - rawY: current position from dragging
+       * - predictedDistance: velocity-based prediction of final position
+       * - maxHeightRef.current * closeThreshold: adaptive threshold (e.g., 40% of screen height)
+       * 
+       * This replaces the previous static threshold (minSnapRef.current / 2) which caused
+       * closure failures from partially expanded states. The adaptive approach works
+       * consistently from any snap point by using a percentage of total screen height.
+       */
+      const baseCondition = !down && onDismiss && rawY + predictedDistance < maxHeightRef.current * closeThreshold && scrollCondition
+      
+      switch (closeLogic) {
+        case 'distance':
+          // Pure distance-based closing (recommended for mobile)
+          // Most reliable for touch devices with imperfect gesture endings
+          return baseCondition
+        case 'movement':
+          // Distance + cumulative movement validation
+          // Requires overall downward movement (my <= 0) to prevent accidental closure
+          return baseCondition && my <= 0
+        case 'original':
+        default:
+          // Distance + direction tolerance for imperfect mobile gestures
+          // Allows slight upward direction (>= -0.5) at gesture end for mobile tolerance
+          return baseCondition && direction >= -0.5
+      }
+    })()
+
+    if (shouldClose) {
       cancel()
-      onDismiss()
+      onDismiss?.()
       return memo
     }
 
@@ -604,14 +735,15 @@ export const BottomSheet = React.forwardRef<
     }
 
     if (first) {
-      send('DRAG')
+      send({ type: 'DRAG' })
     }
 
     if (last) {
-      send('SNAP', {
+      send({
+        type: 'SNAP',
         payload: {
           y: newY,
-          velocity: velocity > 0.05 ? velocity : 1,
+          velocity: safeVelocity > 0.05 ? safeVelocity : 1,
           source: 'dragging',
         },
       })
@@ -619,19 +751,17 @@ export const BottomSheet = React.forwardRef<
       return memo
     }
 
-    // @TODO too many rerenders
-    //send('DRAG', { y: newY, velocity })
-    //*
-    set({
-      y: newY,
+    // Ensure newY is valid before setting spring values
+    const safeY = Number.isFinite(newY) ? newY : safeMemo
+    set.start({
+      y: safeY,
       ready: 1,
       maxHeight: maxHeightRef.current,
       maxSnap: maxSnapRef.current,
       minSnap: minSnapRef.current,
       immediate: true,
-      config: { velocity },
+      config: { velocity: safeVelocity },
     })
-    // */
 
     return memo
   }
@@ -651,25 +781,27 @@ export const BottomSheet = React.forwardRef<
 
   return (
     <animated.div
-      {...props}
-      data-rsbs-root
-      data-rsbs-state={publicStates.find(current.matches)}
-      data-rsbs-is-blocking={blocking}
-      data-rsbs-is-dismissable={!!onDismiss}
-      data-rsbs-has-header={!!header}
-      data-rsbs-has-footer={!!footer}
-      className={className}
-      ref={containerRef}
-      style={{
-        // spread in the interpolations yeees
-        ...interpolations,
-        // but allow overriding them/disabling them
-        ...style,
-        // Not overridable as the "focus lock with opacity 0" trick rely on it
-        // @TODO the line below only fails on TS <4
-        // @ts-ignore
-        opacity: spring.ready,
-      }}
+      {...({
+        ...props,
+        'data-rsbs-root': true,
+        'data-rsbs-state': publicStates.find(state => current.matches(state)),
+        'data-rsbs-is-blocking': blocking,
+        'data-rsbs-is-dismissable': !!onDismiss,
+        'data-rsbs-has-header': !!header,
+        'data-rsbs-has-footer': !!footer,
+        className: className,
+        ref: containerRef,
+        style: {
+          // spread in the interpolations yeees
+          ...interpolations,
+          // but allow overriding them/disabling them
+          ...style,
+          // Not overridable as the "focus lock with opacity 0" trick rely on it
+          // @TODO the line below only fails on TS <4
+          // Spring type compatibility for opacity property
+          opacity: spring.ready,
+        }
+      } as any)}
     >
       {sibling}
       {blocking && (
@@ -701,7 +833,13 @@ export const BottomSheet = React.forwardRef<
             {header}
           </div>
         )}
-        <div key="scroll" data-rsbs-scroll ref={scrollRef} {...(expandOnContentDrag ? bind({ isContentDragging: true }) : {})}>
+        <div 
+          key="scroll" 
+          data-rsbs-scroll 
+          data-body-scroll-lock-ignore
+          ref={scrollRef} 
+          {...(expandOnContentDrag ? bind({ isContentDragging: true }) : {})}
+        >
           <div data-rsbs-content ref={contentRef}>
             {children}
           </div>
@@ -716,6 +854,8 @@ export const BottomSheet = React.forwardRef<
   )
 })
 
+BottomSheet.displayName = 'BottomSheet'
+
 // Used for the data attribute, list over states available to CSS selectors
 const publicStates = [
   'closed',
@@ -728,9 +868,50 @@ const publicStates = [
 ]
 
 // Default prop values that are callbacks, and it's nice to save some memory and reuse their instances since they're pure
+
+/**
+ * Calculates the default snap point for the bottom sheet on initial open.
+ * 
+ * Prioritizes the last user-selected snap point for consistency, falling back
+ * to the minimum available snap point for predictable initial positioning.
+ * 
+ * @param config - Object containing snap point configuration
+ * @param config.snapPoints - Array of available snap points in pixels
+ * @param config.lastSnap - Last snap point selected by user (for persistence)
+ * 
+ * @returns Default snap point in pixels, or 0 if no valid points found
+ * 
+ * @complexity O(n) - Linear scan of snap points for validation
+ * @callFlow
+ * - Returns lastSnap if valid and finite
+ * - Filters out invalid snap points (NaN, undefined)
+ * - Returns minimum valid snap point as fallback
+ * - Returns 0 if no valid snap points exist
+ */
 function _defaultSnap({ snapPoints, lastSnap }: defaultSnapProps) {
-  return lastSnap ?? Math.min(...snapPoints)
+  if (Number.isFinite(lastSnap) && lastSnap !== null) {
+    return lastSnap
+  }
+  const validSnapPoints = snapPoints.filter(point => Number.isFinite(point))
+  return validSnapPoints.length > 0 ? Math.min(...validSnapPoints) : 0
 }
+
+/**
+ * Default snap points function that returns minimum content height.
+ * 
+ * Provides a single snap point based on content dimensions when no custom
+ * snap points are specified. Ensures the sheet has at least minimal height.
+ * 
+ * @param config - Object containing layout measurements
+ * @param config.minHeight - Minimum height needed to display content without overflow
+ * 
+ * @returns Minimum height snap point in pixels, or 0 if invalid
+ * 
+ * @complexity O(1) - Simple validation and return
+ * @callFlow
+ * - Validates minHeight is finite number
+ * - Returns minHeight or 0 as fallback
+ */
 function _snapPoints({ minHeight }: SnapPointProps) {
-  return minHeight
+  return Number.isFinite(minHeight) ? minHeight : 0
 }

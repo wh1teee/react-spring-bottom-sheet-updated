@@ -7,7 +7,7 @@ import Container from '../../docs/fixtures/Container'
 import Expandable from '../../docs/fixtures/Expandable'
 import Kbd from '../../docs/fixtures/Kbd'
 import SheetContent from '../../docs/fixtures/SheetContent'
-import { BottomSheet, BottomSheetRef } from '../../src'
+import { BottomSheet, type BottomSheetRef } from '../../src'
 
 // Just to test we can stop re-renders with this pattern when necessary
 const MemoBottomSheet = memo(BottomSheet)
@@ -88,7 +88,7 @@ function Two() {
             Dismiss
           </Button>
         }
-        defaultSnap={({ headerHeight, footerHeight, minHeight }) =>
+        defaultSnap={({ headerHeight: _headerHeight, footerHeight: _footerHeight, minHeight }) =>
           //headerHeight + footerHeight
           minHeight
         }
@@ -208,7 +208,7 @@ function Five() {
         open={open}
         footer={<strong>Sticky footer</strong>}
         onDismiss={onDismiss}
-        defaultSnap={({ lastSnap }) => lastSnap}
+        defaultSnap={({ lastSnap }) => lastSnap ?? 0}
         snapPoints={({ minHeight, headerHeight, footerHeight }) => [
           headerHeight,
           headerHeight + footerHeight,
@@ -242,10 +242,13 @@ function Six() {
     setMaxHeight(half ? window.innerHeight / 2 : window.innerHeight)
   }, [half])
 
-  const style = { ['--rsbs-bg' as any]: '#EFF6FF' }
+  const style: React.CSSProperties = { ['--rsbs-bg' as keyof React.CSSProperties]: '#EFF6FF' }
   if (half) {
-    // setting it to undefined removes it, so we don't have to hardcode the default rounding we want in this component
-    style['--rsbs-overlay-rounded' as any] = undefined
+    // Remove the property entirely instead of setting to undefined
+    delete (style as any)['--rsbs-overlay-rounded']
+  } else {
+    // Explicitly set the property when needed
+    (style as any)['--rsbs-overlay-rounded'] = ''
   }
 
   return (
@@ -416,8 +419,8 @@ function Ten() {
 
 function Eleven() {
   const [open, setOpen] = useState(false)
-  const [height, setHeight] = useState(undefined)
-  const sheetRef = useRef<BottomSheetRef>()
+  const [height, setHeight] = useState<string | undefined>(undefined)
+  const sheetRef = useRef<BottomSheetRef>(null)
 
   return (
     <>
@@ -442,15 +445,17 @@ function Eleven() {
         }}
         footer={
           <Button
-            onClick={() =>
-              sheetRef.current.snapTo(
-                ({ height, snapPoints }) => {
-                  const minSnap = Math.min(...snapPoints)
-                  return height > minSnap ? minSnap : Math.max(...snapPoints)
-                },
-                { velocity: 0, source: 'reset' }
-              )
-            }
+            onClick={() => {
+              if (sheetRef.current) {
+                sheetRef.current.snapTo(
+                  ({ height, snapPoints }) => {
+                    const minSnap = Math.min(...snapPoints)
+                    return height > minSnap ? minSnap : Math.max(...snapPoints)
+                  },
+                  { velocity: 0, source: 'reset' }
+                )
+              }
+            }}
           >
             Reset
           </Button>
@@ -458,12 +463,14 @@ function Eleven() {
       >
         <SheetContent style={{ height }}>
           <Button
-            onClick={() =>
-              sheetRef.current.snapTo(({ height, snapPoints }) => {
-                const minSnap = Math.min(...snapPoints)
-                return height > minSnap ? minSnap : Math.max(...snapPoints)
-              })
-            }
+            onClick={() => {
+              if (sheetRef.current) {
+                sheetRef.current.snapTo(({ height, snapPoints }) => {
+                  const minSnap = Math.min(...snapPoints)
+                  return height > minSnap ? minSnap : Math.max(...snapPoints)
+                })
+              }
+            }}
           >
             snapTo
           </Button>
@@ -476,7 +483,7 @@ function Eleven() {
 
 function Twelve() {
   const [open, setOpen] = useState(false)
-  const sheetRef = useRef<BottomSheetRef>()
+  const sheetRef = useRef<BottomSheetRef>(null)
   const [height, setHeight] = useState(0)
 
   return (
@@ -493,20 +500,34 @@ function Twelve() {
           )
         }
         onSpringStart={(event) => {
-          console.log('onSpringStart', event, sheetRef.current.height)
-          setHeight(sheetRef.current.height)
-          requestAnimationFrame(() => setHeight(sheetRef.current.height))
-          if (event.type === 'OPEN') {
-            setTimeout(() => setHeight(sheetRef.current.height), 100)
+          if (sheetRef.current) {
+            console.log('onSpringStart', event, sheetRef.current.height)
+            setHeight(sheetRef.current.height)
+            requestAnimationFrame(() => {
+              if (sheetRef.current) {
+                setHeight(sheetRef.current.height)
+              }
+            })
+            if (event.type === 'OPEN') {
+              setTimeout(() => {
+                if (sheetRef.current) {
+                  setHeight(sheetRef.current.height)
+                }
+              }, 100)
+            }
           }
         }}
         onSpringCancel={(event) => {
-          console.log('onSpringCancel', event, sheetRef.current.height)
-          setHeight(sheetRef.current.height)
+          if (sheetRef.current) {
+            console.log('onSpringCancel', event, sheetRef.current.height)
+            setHeight(sheetRef.current.height)
+          }
         }}
         onSpringEnd={(event) => {
-          console.log('onSpringEnd', event, sheetRef.current.height)
-          setHeight(sheetRef.current.height)
+          if (sheetRef.current) {
+            console.log('onSpringEnd', event, sheetRef.current.height)
+            setHeight(sheetRef.current.height)
+          }
         }}
         footer={<div className="w-full text-center">Height: {height}</div>}
       >

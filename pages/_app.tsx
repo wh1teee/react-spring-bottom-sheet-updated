@@ -2,13 +2,19 @@ import { inspect } from '@xstate/inspect'
 import type { InferGetStaticPropsType } from 'next'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
+import { ThemeProvider } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
+import { CacheProvider, type EmotionCache } from '@emotion/react'
 import { capitalize } from '../docs/utils'
 import { debugging } from '../src/utils'
+import theme from '../docs/theme'
+import createEmotionCache from '../docs/createEmotionCache'
 
 import '../docs/style.css'
 import '../src/style.css'
 
-// Setup xstate debugging, but only when in dev mode
+// Setup XState debugging, but only when in dev mode
+// Note: @xstate/inspect v0.8.0 has warnings with XState v5, but functionality works
 if (debugging) {
   inspect({
     url: 'https://statecharts.io/inspect',
@@ -26,8 +32,8 @@ export async function getStaticProps() {
     { version: reactUseGestureVersion },
   ] = await Promise.all([
     import('../package.json'),
-    import('react-spring/package.json'),
-    import('react-use-gesture/package.json'),
+    import('@react-spring/web/package.json'),
+    import('@use-gesture/react/package.json'),
   ])
   if (!meta['og:site_name']) {
     meta['og:site_name'] = capitalize(name)
@@ -48,13 +54,27 @@ export async function getStaticProps() {
 
 export type GetStaticProps = InferGetStaticPropsType<typeof getStaticProps>
 
-export default function _AppPage({ Component, pageProps }: AppProps) {
+// Client-side cache, shared for the whole session of the user in the browser.
+const clientSideEmotionCache = createEmotionCache()
+
+interface MyAppProps extends AppProps {
+  emotionCache?: EmotionCache
+}
+
+export default function _AppPage(props: MyAppProps) {
+  const { Component, emotionCache = clientSideEmotionCache, pageProps } = props
+  
   return (
-    <>
+    <CacheProvider value={emotionCache}>
       <Head>
         <meta name="viewport" content="width=device-width,viewport-fit=cover" />
+        <meta name="emotion-insertion-point" content="" />
       </Head>
-      <Component {...pageProps} />
-    </>
+      <ThemeProvider theme={theme}>
+        {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+        <CssBaseline />
+        <Component {...pageProps} />
+      </ThemeProvider>
+    </CacheProvider>
   )
 }

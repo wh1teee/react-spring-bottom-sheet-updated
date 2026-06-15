@@ -1,4 +1,7 @@
-import React, { useDebugValue, useEffect, useRef } from 'react'
+'use client'
+
+import type React from 'react'
+import { useDebugValue, useEffect, useRef } from 'react'
 
 // Handle hiding and restoring aria-hidden attributes
 export function useAriaHider({
@@ -12,7 +15,9 @@ export function useAriaHider({
     activate: () => {
       throw new TypeError('Tried to activate aria hider too early')
     },
-    deactivate: () => {},
+    deactivate: () => {
+      // Initial deactivate function - will be replaced when enabled
+    },
   })
 
   useDebugValue(enabled ? 'Enabled' : 'Disabled')
@@ -20,7 +25,14 @@ export function useAriaHider({
   useEffect(() => {
     if (!enabled) {
       ref.current.deactivate()
-      ref.current = { activate: () => {}, deactivate: () => {} }
+      ref.current = { 
+        activate: () => {
+          // Disabled aria hider - no action needed
+        }, 
+        deactivate: () => {
+          // Disabled aria hider - no action needed
+        } 
+      }
       return
     }
 
@@ -40,8 +52,8 @@ export function useAriaHider({
           if (node === parentNode) {
             return
           }
-          let attr = node.getAttribute('aria-hidden')
-          let alreadyHidden = attr !== null && attr !== 'false'
+          const attr = node.getAttribute('aria-hidden')
+          const alreadyHidden = attr !== null && attr !== 'false'
           if (alreadyHidden) {
             return
           }
@@ -55,7 +67,7 @@ export function useAriaHider({
         active = false
 
         rootNodes.forEach((node, index) => {
-          let originalValue = originalValues[index]
+          const originalValue = originalValues[index]
           if (originalValue === null) {
             node.removeAttribute('aria-hidden')
           } else {
