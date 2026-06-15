@@ -35,11 +35,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      - name: Approve build scripts
+        run: pnpm approve-builds --all
+
       - name: Type check
         run: pnpm type-check
 
       - name: Lint
         run: pnpm lint
+
+      - name: Build library
+        run: pnpm build:dist
+
+      - name: Bundle size
+        run: pnpm size
 
       - name: Test
         run: pnpm test
