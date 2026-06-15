@@ -34,7 +34,7 @@
 **Important:** When merging this PR:
 1. Use "Squash and merge"
 2. Update the merge commit title to follow conventional commits:
-   ```
+   ```bash
    type(scope): description
    ```
    Example: `feat(animations): add spring configuration options`

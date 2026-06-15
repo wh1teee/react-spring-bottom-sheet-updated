@@ -22,7 +22,10 @@ export const ProblematicBottomSheet = forwardRef<
         problematicScrollLockRef.current?.deactivate()
       }
     }
-  }, [props.open, useProblematic, problematicScrollLockRef])
+    // problematicScrollLockRef is a stable ref from a hook; intentionally
+    // omitted from deps to avoid spurious re-runs of this effect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.open, useProblematic])
 
   // If problematic mode is enabled, disable the built-in scroll locking
   if (useProblematic) {
